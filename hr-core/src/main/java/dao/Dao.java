@@ -6,7 +6,8 @@ import java.util.Optional;
 public interface Dao<T> {
     Optional<T> get(long id);
     List<T> getAll();
-    T save(T t);
-    T update(T t, String... params);
+    boolean save(T t);
+    boolean update(T t);
     boolean delete (T t);
+    Optional<T> search (T t);
 }

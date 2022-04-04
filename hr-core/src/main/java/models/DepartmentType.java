@@ -1,20 +1,12 @@
 package models;
 
-public class Position {
+public class DepartmentType {
     private Long id;
     private String name;
 
-    public Position(long id, String name) {
+    public DepartmentType(long id, String name) {
         this.id = id;
         this.name = name;
-    }
-
-    public Position(String name) {
-        this.name = name;
-    }
-
-    public Position(Long id) {
-        this.id = id;
     }
 
     public Long getId() {

@@ -1,26 +1,23 @@
 package models;
 
-import models.Department;
-
-import java.util.Date;
+import java.sql.Date;
 
 public class Employee {
-    private long id;
+    private Long id;
     private String firstName;
     private String lastName;
     private String patronymic;
+    private String email;
     private EmployeeGender gender;
     private Date birthDate;
-    private Department department;
-    private Position position;
-    //TODO constructor
+    private Long department_id;
+    private Long position_id;
 
-
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -64,19 +61,27 @@ public class Employee {
         this.birthDate = birthDate;
     }
 
-    public Department getDepartment() {
-        return department;
+    public Long getDepartment_id() {
+        return department_id;
     }
 
-    public void setDepartment(Department department) {
-        this.department = department;
+    public void setDepartment_id(Long department_id) {
+        this.department_id = department_id;
     }
 
-    public Position getPosition() {
-        return position;
+    public Long getPosition_id() {
+        return position_id;
     }
 
-    public void setPosition(Position position) {
-        this.position = position;
+    public void setPosition_id(Long position_id) {
+        this.position_id = position_id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

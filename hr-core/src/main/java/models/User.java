@@ -7,7 +7,13 @@ public class User {
     private String password;
     private Employee employeeInfo;
     private UserRoles role;
-    //TODO constructor
+
+    public User(String userName, String password, Employee employeeInfo, UserRoles role) {
+        this.userName = userName;
+        this.password = password;
+        this.employeeInfo = employeeInfo;
+        this.role = role;
+    }
 
     public String getUserName() {
         return userName;

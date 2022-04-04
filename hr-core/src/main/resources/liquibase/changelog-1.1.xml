@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--Создание тестовой базы-->
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.0.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
+    <changeSet author="natalia" id="create_table_positions">
+        <createTable tableName="positions" schemaName="test_hr_digdes_schema">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(250)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="natalia" id="create_table_department_types">
+        <createTable tableName="department_types" schemaName="test_hr_digdes_schema">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(250)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="natalia" id="create_table_employees">
+        <createTable tableName="employees" schemaName="test_hr_digdes_schema">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="first_name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="patronymic" type="varchar(250)"/>
+            <column name="gender" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="birth_date" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="varchar(250)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="department_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="position_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="natalia" id="create_table_departments">
+        <createTable tableName="departments" schemaName="test_hr_digdes_schema">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(250)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="type_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="head_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parent_id" type="bigint"/>
+            <column name="path" type="ltree">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="natalia" id="create_table_users">
+        <createTable tableName="users" schemaName="test_hr_digdes_schema">
+            <column name="username" type="varchar(250)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="password" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="employee_id" type="bigint">
+                <constraints unique="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="natalia" id="addForeignKeyConstraints">
+        <addForeignKeyConstraint baseColumnNames="department_id"
+                                 baseTableName="employees"
+                                 baseTableSchemaName="test_hr_digdes_schema"
+                                 constraintName="fk_employee_department"
+                                 referencedColumnNames="id"
+                                 referencedTableName="departments"
+                                 referencedTableSchemaName="test_hr_digdes_schema"/>
+        <addForeignKeyConstraint baseColumnNames="position_id"
+                                 baseTableName="employees"
+                                 baseTableSchemaName="test_hr_digdes_schema"
+                                 constraintName="fk_employee_position"
+                                 referencedColumnNames="id"
+                                 referencedTableName="positions"
+                                 referencedTableSchemaName="test_hr_digdes_schema"/>
+        <addForeignKeyConstraint baseColumnNames="type_id"
+                                 baseTableName="departments"
+                                 baseTableSchemaName="test_hr_digdes_schema"
+                                 constraintName="fk_department_type"
+                                 referencedColumnNames="id"
+                                 referencedTableName="department_types"
+                                 referencedTableSchemaName="test_hr_digdes_schema"/>
+        <addForeignKeyConstraint baseColumnNames="head_id"
+                                 baseTableName="departments"
+                                 baseTableSchemaName="test_hr_digdes_schema"
+                                 constraintName="fk_department_head"
+                                 referencedColumnNames="id"
+                                 referencedTableName="employees"
+                                 referencedTableSchemaName="test_hr_digdes_schema"/>
+        <addForeignKeyConstraint baseColumnNames="parent_id"
+                                 baseTableName="departments"
+                                 baseTableSchemaName="test_hr_digdes_schema"
+                                 constraintName="fk_department_department"
+                                 referencedColumnNames="id"
+                                 referencedTableName="departments"
+                                 referencedTableSchemaName="test_hr_digdes_schema"/>
+        <addForeignKeyConstraint baseColumnNames="employee_id"
+                                 baseTableName="users"
+                                 baseTableSchemaName="test_hr_digdes_schema"
+                                 constraintName="fk_user_employee"
+                                 referencedColumnNames="id"
+                                 referencedTableName="employees"
+                                 referencedTableSchemaName="test_hr_digdes_schema"/>
+    </changeSet>
+    <!--Заполнение тестовой базы-->
+
+</databaseChangeLog>

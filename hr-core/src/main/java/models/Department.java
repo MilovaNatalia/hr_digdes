@@ -1,21 +1,15 @@
 package models;
 
-import java.util.List;
-
 public class Department {
-    private long id;
+    private Long id;
     private String name;
-    private Employee head;
-    private List<Employee> employees;
-    private Department parent;
+    private Long head_id;
+    private Long parent_id;
     //TODO constructor
 
-    public long getId() {
-        return id;
-    }
 
-    public void setId(long id) {
-        this.id = id;
+    public Long getId() {
+        return id;
     }
 
     public String getName() {
@@ -26,27 +20,23 @@ public class Department {
         this.name = name;
     }
 
-    public Employee getHead() {
-        return head;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public void setHead(Employee head) {
-        this.head = head;
+    public Long getHead_id() {
+        return head_id;
     }
 
-    public List<Employee> getEmployees() {
-        return employees;
+    public void setHead_id(Long head_id) {
+        this.head_id = head_id;
     }
 
-    public void setEmployees(List<Employee> employees) {
-        this.employees = employees;
+    public Long getParent_id() {
+        return parent_id;
     }
 
-    public Department getParent() {
-        return parent;
-    }
-
-    public void setParent(Department parent) {
-        this.parent = parent;
+    public void setParent_id(Long parent_id) {
+        this.parent_id = parent_id;
     }
 }

@@ -3,6 +3,7 @@ package notifier;
 import message.Message;
 
 public interface Notifier {
-    boolean sendMessage(Message message);
+    //TODO notifier properties
     boolean setUpSettings(Settings settings);
+    boolean sendMessage(Message message);
 }
