@@ -1,6 +1,7 @@
 package models;
 
 import java.sql.Date;
+import java.util.Objects;
 
 public class Employee {
     private Long id;
@@ -83,5 +84,18 @@ public class Employee {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Employee employee = (Employee) o;
+        return Objects.equals(id, employee.id) && Objects.equals(firstName, employee.firstName) && Objects.equals(lastName, employee.lastName) && Objects.equals(patronymic, employee.patronymic) && Objects.equals(email, employee.email) && gender == employee.gender && Objects.equals(birthDate, employee.birthDate) && Objects.equals(department_id, employee.department_id) && Objects.equals(position_id, employee.position_id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, firstName, lastName, patronymic, email, gender, birthDate, department_id, position_id);
     }
 }

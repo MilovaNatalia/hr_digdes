@@ -1,15 +1,18 @@
-import notifier.Settings;
+package web;
+
+import models.Employee;
 
 import java.util.Optional;
 
-public class SettingsApiController implements ApiController<Settings> {
+public class EmployeeApiController implements ApiController<Employee> {
+
     @Override
-    public Optional<Settings> create(String info) {
+    public Optional<Employee> create(String info) {
         return Optional.empty();
     }
 
     @Override
-    public Optional<Settings> update(String id, String info) {
+    public Optional<Employee> update(String id, String info) {
         return Optional.empty();
     }
 
@@ -19,12 +22,12 @@ public class SettingsApiController implements ApiController<Settings> {
     }
 
     @Override
-    public Optional<Settings> find(String searchRequest) {
+    public Optional<Employee> find(String searchRequest) {
         return Optional.empty();
     }
 
     @Override
-    public Optional<Settings> view(String id) {
+    public Optional<Employee> view(String id) {
         return Optional.empty();
     }
 

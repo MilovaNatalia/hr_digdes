@@ -6,7 +6,9 @@
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="name" type="varchar(250)"/>
+            <column name="name" type="varchar(250)">
+                <constraints nullable="false" unique="true"/>
+            </column>
         </createTable>
     </changeSet>
     <changeSet author="natalia" id="create_table_department_types">
@@ -59,13 +61,9 @@
             <column name="type_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
-            <column name="head_id" type="bigint">
-                <constraints nullable="false"/>
-            </column>
+            <column name="head_id" type="bigint"/>
             <column name="parent_id" type="bigint"/>
-            <column name="path" type="ltree">
-                <constraints nullable="false"/>
-            </column>
+            <column name="path" type="ltree"/>
         </createTable>
     </changeSet>
     <changeSet author="natalia" id="create_table_users">
@@ -128,6 +126,109 @@
                                  referencedTableName="employees"
                                  referencedTableSchemaName="test_hr_digdes_schema"/>
     </changeSet>
+    <changeSet author="natalia" id="addProcedureUpdatePath">
+        <createProcedure>
+            CREATE OR REPLACE FUNCTION update_section_parent_path() RETURNS TRIGGER AS $$
+            DECLARE
+            parent_path ltree;
+            BEGIN
+                IF NEW.parent_id IS NULL THEN
+                    NEW.path = 'root'::ltree;
+                ELSEIF TG_OP = 'INSERT' OR OLD.parent_id IS NULL OR OLD.parent_id != NEW.parent_id THEN
+                    SELECT path || id::text FROM test_hr_digdes_schema.departments WHERE id = NEW.parent_id INTO parent_path;
+                    IF parent_path IS NULL THEN
+                        RAISE EXCEPTION 'Invalid parent_id %', NEW.parent_id;
+                    END IF;
+                NEW.path = parent_path;
+            END IF;
+            RETURN NEW;
+            END;
+        $$ LANGUAGE plpgsql;
+        </createProcedure>
+        <rollback>
+            <sql>
+                drop function update_section_parent_path()
+            </sql>
+        </rollback>
+    </changeSet>
+    <changeSet author="natalia" id="addUpdatePathTrigger">
+        <sql>
+            DROP TRIGGER IF EXISTS parent_path_tgr ON test_hr_digdes_schema.departments;
+            CREATE TRIGGER parent_path_tgr
+                BEFORE INSERT OR UPDATE ON test_hr_digdes_schema.departments
+                                     FOR EACH ROW EXECUTE PROCEDURE update_section_parent_path();
+        </sql>
+        <rollback>
+            DROP TRIGGER parent_path_tgr ON test_hr_digdes_schema.departments;
+        </rollback>
+    </changeSet>
     <!--Заполнение тестовой базы-->
-
+    <changeSet author="natalia" id="insertTestPositions">
+        <insert tableName="positions" schemaName ="test_hr_digdes_schema">
+            <column name="name" value="Junior java programmer" />
+        </insert>
+        <insert tableName="positions" schemaName ="test_hr_digdes_schema">
+            <column name="name" value="Intern java programmer"/>
+        </insert>
+        <insert tableName="positions" schemaName ="test_hr_digdes_schema">
+            <column name="name" value="Senior java programmer"/>
+        </insert>
+        <insert tableName="positions" schemaName ="test_hr_digdes_schema">
+            <column name="name" value="Team lead"/>
+        </insert>
+        <insert tableName="positions" schemaName ="test_hr_digdes_schema">
+            <column name="name" value="Project manager"/>
+        </insert>
+    </changeSet>
+    <changeSet author="natalia" id="insertTestDepartmentTypes">
+        <insert tableName="department_types" schemaName ="test_hr_digdes_schema">
+            <column name="name" value="Company" />
+        </insert>
+        <insert tableName="department_types" schemaName ="test_hr_digdes_schema">
+            <column name="name" value="Service"/>
+        </insert>
+        <insert tableName="department_types" schemaName ="test_hr_digdes_schema">
+            <column name="name" value="Group"/>
+        </insert>
+        <insert tableName="department_types" schemaName ="test_hr_digdes_schema">
+            <column name="name" value="Department"/>
+        </insert>
+    </changeSet>
+    <changeSet author="natalia" id="insertDepartments">
+        <insert tableName="departments" schemaName ="test_hr_digdes_schema">
+            <column name="name" value="It Company"/>
+            <column name="type_id" value="1"/>
+        </insert>
+        <insert tableName="departments" schemaName ="test_hr_digdes_schema">
+            <column name="name" value="HR service"/>
+            <column name="type_id" value="2"/>
+            <column name="parent_id" value="1"/>
+        </insert>
+        <insert tableName="departments" schemaName ="test_hr_digdes_schema">
+            <column name="name" value="Developer service"/>
+            <column name="type_id" value="2"/>
+            <column name="parent_id" value="1"/>
+        </insert>
+    </changeSet>
+    <changeSet author="natalia" id="insertTestEmployees">
+        <insert tableName="employees" schemaName ="test_hr_digdes_schema">
+            <column name="first_name" value="Ivan" />
+            <column name="last_name" value="Ivanov" />
+            <column name="patronymic" value="Ivanovich"/>
+            <column name="gender" value="MALE"/>
+            <column name="birth_date" value="19.04.2021"/>
+            <column name="email" value="example@example.ru"/>
+            <column name="department_id" value="2"/>
+            <column name="position_id" value="4"/>
+        </insert>
+        <insert tableName="employees" schemaName ="test_hr_digdes_schema">
+            <column name="first_name" value="David" />
+            <column name="last_name" value="Jones" />
+            <column name="gender" value="MALE"/>
+            <column name="birth_date" value="01.01.2000"/>
+            <column name="email" value="example2@example.ru"/>
+            <column name="department_id" value="2"/>
+            <column name="position_id" value="1"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>

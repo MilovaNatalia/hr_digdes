@@ -1,5 +1,7 @@
 package dao;
 
+import models.Position;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -9,5 +11,5 @@ public interface Dao<T> {
     boolean save(T t);
     boolean update(T t);
     boolean delete (T t);
-    Optional<T> search (T t);
+    List<T> simpleSearch(T t);
 }

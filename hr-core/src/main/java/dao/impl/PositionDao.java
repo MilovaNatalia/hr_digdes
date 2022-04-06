@@ -13,10 +13,16 @@ import java.util.List;
 import java.util.Optional;
 
 public class PositionDao implements Dao<Position> {
+   private String schemaName;
+
+    public PositionDao(String schemaName) {
+        this.schemaName = schemaName;
+    }
+
     @Override
     public Optional<Position> get(long id) {
         try (Connection connection = C3p0DataSource.getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement("SELECT * FROM hr_digdes_schema.positions WHERE id=?");
+            PreparedStatement prepared = connection.prepareStatement(String.format("SELECT * FROM %s.positions WHERE id=?",schemaName));
             prepared.setLong(1, id);
             ResultSet resultSet = prepared.executeQuery();
             if (resultSet.next())
@@ -30,9 +36,10 @@ public class PositionDao implements Dao<Position> {
 
     @Override
     public List<Position> getAll() {
+        //todo: pagination
         List<Position> positions = new ArrayList<>();
         try (Connection connection = C3p0DataSource.getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement("SELECT * FROM hr_digdes_schema.positions");
+            PreparedStatement prepared = connection.prepareStatement(String.format("SELECT * FROM %s.positions", schemaName));
             ResultSet resultSet = prepared.executeQuery();
             while (resultSet.next()) {
                 positions.add(new Position(resultSet.getLong("id"), resultSet.getString("name")));
@@ -47,9 +54,10 @@ public class PositionDao implements Dao<Position> {
     @Override
     public boolean save(Position position) {
         try (Connection connection = C3p0DataSource.getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement("INSERT INTO hr_digdes_schema.positions (name) VALUES (?)");
+            PreparedStatement prepared = connection.prepareStatement(String.format("INSERT INTO %s.positions (name) VALUES (?)",schemaName));
             prepared.setString(1,position.getName());
-            return prepared.execute();
+            if (prepared.executeUpdate() > 0)
+                return true;
         } catch (SQLException e) {
             e.printStackTrace();
             //todo: log this
@@ -61,10 +69,11 @@ public class PositionDao implements Dao<Position> {
     public boolean update(Position position) {
         try (Connection connection = C3p0DataSource.getConnection()) {
             if (position.getName() != null) {
-                PreparedStatement prepared = connection.prepareStatement("UPDATE hr_digdes_schema.positions SET name=? WHERE id=?");
+                PreparedStatement prepared = connection.prepareStatement(String.format("UPDATE %s.positions SET name=? WHERE id=?", schemaName));
                 prepared.setString(1, position.getName());
                 prepared.setLong(2, position.getId());
-                return prepared.execute();
+                if (prepared.executeUpdate() > 0)
+                    return true;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -76,9 +85,10 @@ public class PositionDao implements Dao<Position> {
     @Override
     public boolean delete(Position position) {
         try (Connection connection = C3p0DataSource.getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement("DELETE FROM hr_digdes_schema.positions WHERE id=?");
+            PreparedStatement prepared = connection.prepareStatement(String.format("DELETE FROM %s.positions WHERE id=?", schemaName));
             prepared.setLong(1, position.getId());
-            return prepared.execute();
+            if (prepared.executeUpdate() > 0)
+                return true;
         } catch (SQLException e) {
             e.printStackTrace();
             //todo: log this
@@ -87,19 +97,23 @@ public class PositionDao implements Dao<Position> {
     }
 
     @Override
-    public Optional<Position> search(Position position) {
+    public List<Position> simpleSearch(Position position) {
+        List<Position> positions = new ArrayList<>();
         try (Connection connection = C3p0DataSource.getConnection()) {
-            if (position.getId() != null)
-                return get(position.getId());
-            PreparedStatement prepared = connection.prepareStatement("SELECT * FROM hr_digdes_schema.positions WHERE name=?");
+            if (position.getId() != null){
+                Optional<Position> positionById = get(position.getId());
+                positionById.ifPresent(positions::add);
+                return positions;
+            }
+            PreparedStatement prepared = connection.prepareStatement(String.format("SELECT * FROM %s.positions WHERE name=?", schemaName));
             prepared.setString(1, position.getName());
             ResultSet resultSet = prepared.executeQuery();
-            if (resultSet.next())
-                return Optional.of(new Position(resultSet.getLong("id"), resultSet.getString("name")));
+            while (resultSet.next())
+                positions.add(new Position(resultSet.getLong("id"), resultSet.getString("name")));
         } catch (SQLException e) {
             e.printStackTrace();
             //todo: log this
         }
-        return Optional.empty();
+        return positions;
     }
 }

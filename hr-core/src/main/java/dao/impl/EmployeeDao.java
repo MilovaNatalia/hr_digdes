@@ -13,10 +13,16 @@ import java.util.List;
 import java.util.Optional;
 
 public class EmployeeDao implements Dao<Employee> {
+    private String schemaName;
+
+    public EmployeeDao(String schemaName) {
+        this.schemaName = schemaName;
+    }
+
     @Override
     public Optional<Employee> get(long id) {
         try (Connection connection = C3p0DataSource.getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement("SELECT * FROM hr_digdes_schema.employees WHERE id=?");
+            PreparedStatement prepared = connection.prepareStatement(String.format("SELECT * FROM %s.employees WHERE id=?", schemaName));
             prepared.setLong(1, id);
             ResultSet resultSet = prepared.executeQuery();
             if (resultSet.next())
@@ -30,9 +36,10 @@ public class EmployeeDao implements Dao<Employee> {
 
     @Override
     public List<Employee> getAll() {
+        //todo: pagination
         List<Employee> employees = new ArrayList<>();
         try (Connection connection = C3p0DataSource.getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement("SELECT * FROM hr_digdes_schema.employees");
+            PreparedStatement prepared = connection.prepareStatement(String.format("SELECT * FROM %s.employees", schemaName));
             ResultSet resultSet = prepared.executeQuery();
             while (resultSet.next()) {
                 employees.add(getEmployee(resultSet));
@@ -48,9 +55,9 @@ public class EmployeeDao implements Dao<Employee> {
     public boolean save(Employee employee) {
         try (Connection connection = C3p0DataSource.getConnection()) {
             PreparedStatement prepared = connection.prepareStatement(
-                    "INSERT INTO hr_digdes_schema.positions " +
+                    String.format("INSERT INTO %s.employees " +
                             "(first_name, last_name, patronymic, gender, birth_date, email, department_id, position_id) " +
-                            "VALUES (?,?,?,?,?,?,?,?)");
+                            "VALUES (?,?,?,?,?,?,?,?)", schemaName));
             prepared.setString(1, employee.getFirstName());
             prepared.setString(2, employee.getLastName());
             prepared.setString(3, employee.getPatronymic());
@@ -59,7 +66,8 @@ public class EmployeeDao implements Dao<Employee> {
             prepared.setString(6, employee.getEmail());
             prepared.setLong(7, employee.getDepartment_id());
             prepared.setLong(8, employee.getPosition_id());
-            return prepared.execute();
+            if (prepared.executeUpdate() > 0)
+                return true;
         } catch (SQLException e) {
             e.printStackTrace();
             //todo: log this
@@ -70,10 +78,11 @@ public class EmployeeDao implements Dao<Employee> {
     @Override
     public boolean update(Employee employee) {
         try (Connection connection = C3p0DataSource.getConnection()) {
-            String statement = String.format("UPDATE hr_digdes_schema.employees SET %s WHERE id=%d",
-                    getStatementArgs(employee, ","), employee.getId());
+            String statement = String.format("UPDATE %s.employees SET %s WHERE id=%d",
+                    schemaName, getStatementArgs(employee, ","), employee.getId());
             PreparedStatement prepared = connection.prepareStatement(statement);
-            return prepared.execute();
+            if (prepared.executeUpdate() > 0)
+                return true;
         } catch (SQLException e) {
             e.printStackTrace();
             //todo: log this
@@ -84,9 +93,10 @@ public class EmployeeDao implements Dao<Employee> {
     @Override
     public boolean delete(Employee employee) {
         try (Connection connection = C3p0DataSource.getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement("DELETE FROM hr_digdes_schema.employee WHERE id=?");
+            PreparedStatement prepared = connection.prepareStatement(String.format("DELETE FROM %s.employees WHERE id=?", schemaName));
             prepared.setLong(1, employee.getId());
-            return prepared.execute();
+            if (prepared.executeUpdate() > 0)
+                return true;
         } catch (SQLException e) {
             e.printStackTrace();
             //todo: log this
@@ -95,21 +105,25 @@ public class EmployeeDao implements Dao<Employee> {
     }
 
     @Override
-    public Optional<Employee> search(Employee employee) {
+    public List<Employee> simpleSearch(Employee employee) {
+        List<Employee> employees = new ArrayList<>();
         try (Connection connection = C3p0DataSource.getConnection()) {
-            if (employee.getId() != null)
-                return get(employee.getId());
-            String statement = String.format("SELECT * FROM hr_digdes_schema.employees WHERE %s",
-                    getStatementArgs(employee, "AND"));
+            if (employee.getId() != null){
+                Optional<Employee> employeeById = get(employee.getId());
+                employeeById.ifPresent(employees::add);
+                return employees;
+            }
+            String statement = String.format("SELECT * FROM %s.employees WHERE %s",
+                    schemaName, getStatementArgs(employee, " AND "));
             PreparedStatement prepared = connection.prepareStatement(statement);
             ResultSet resultSet = prepared.executeQuery();
-            if (resultSet.next())
-                return Optional.of(getEmployee(resultSet));
+            while (resultSet.next())
+                employees.add(getEmployee(resultSet));
         } catch (SQLException e) {
             e.printStackTrace();
             //todo: log this
         }
-        return Optional.empty();
+        return employees;
     }
 
     private Employee getEmployee(ResultSet resultSet) throws SQLException {

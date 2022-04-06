@@ -20,7 +20,7 @@ public class C3p0DataSource {
             cpds.setPassword("digdes");
         } catch (PropertyVetoException e) {
             e.printStackTrace();
-            //todo: log
+            //todo: log this
         }
 
     }

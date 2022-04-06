@@ -1,3 +1,5 @@
+package web;
+
 import java.util.Optional;
 
 public interface ApiController<T> {
@@ -12,4 +14,7 @@ public interface ApiController<T> {
     Optional<T> view(String id);
 
     boolean loadFromFile(String fileName);
+
+    //todo: parse request
+
 }

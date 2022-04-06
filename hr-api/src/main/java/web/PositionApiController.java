@@ -1,15 +1,17 @@
-import models.Department;
+package web;
+
+import models.Position;
 
 import java.util.Optional;
 
-public class DepartmentApiController implements ApiController<Department> {
+public class PositionApiController implements ApiController<Position> {
     @Override
-    public Optional<Department> create(String info) {
+    public Optional<Position> create(String info) {
         return Optional.empty();
     }
 
     @Override
-    public Optional<Department> update(String id, String info) {
+    public Optional<Position> update(String id, String info) {
         return Optional.empty();
     }
 
@@ -19,12 +21,12 @@ public class DepartmentApiController implements ApiController<Department> {
     }
 
     @Override
-    public Optional<Department> find(String searchRequest) {
+    public Optional<Position> find(String searchRequest) {
         return Optional.empty();
     }
 
     @Override
-    public Optional<Department> view(String id) {
+    public Optional<Position> view(String id) {
         return Optional.empty();
     }
 

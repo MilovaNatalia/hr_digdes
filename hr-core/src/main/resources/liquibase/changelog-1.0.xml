@@ -5,7 +5,9 @@
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="name" type="varchar(250)"/>
+            <column name="name" type="varchar(250)">
+                <constraints nullable="false" unique="true"/>
+            </column>
         </createTable>
     </changeSet>
     <changeSet author="natalia" id="create_table_department_types">
@@ -58,13 +60,9 @@
             <column name="type_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
-            <column name="head_id" type="bigint">
-                <constraints nullable="false"/>
-            </column>
+            <column name="head_id" type="bigint"/>
             <column name="parent_id" type="bigint"/>
-            <column name="path" type="ltree">
-                <constraints nullable="false"/>
-            </column>
+            <column name="path" type="ltree"/>
         </createTable>
     </changeSet>
     <changeSet author="natalia" id="create_table_users">
@@ -126,5 +124,41 @@
                                  referencedColumnNames="id"
                                  referencedTableName="employees"
                                  referencedTableSchemaName="hr_digdes_schema"/>
+    </changeSet>
+    <changeSet author="natalia" id="addProcedureUpdatePath">
+        <createProcedure>
+        CREATE OR REPLACE FUNCTION update_section_parent_path() RETURNS TRIGGER AS $$
+            DECLARE
+                parent_path ltree;
+            BEGIN
+                IF NEW.parent_id IS NULL THEN
+                    NEW.path = 'root'::ltree;
+                ELSEIF TG_OP = 'INSERT' OR OLD.parent_id IS NULL OR OLD.parent_id != NEW.parent_id THEN
+                    SELECT path || id::text FROM hr_digdes_schema.departments WHERE id = NEW.parent_id INTO parent_path;
+                    IF parent_path IS NULL THEN
+                        RAISE EXCEPTION 'Invalid parent_id %', NEW.parent_id;
+                    END IF;
+                    NEW.path = parent_path;
+                END IF;
+                RETURN NEW;
+            END;
+        $$ LANGUAGE plpgsql;
+        </createProcedure>
+        <rollback>
+            <sql>
+                drop function update_section_parent_path()
+            </sql>
+        </rollback>
+    </changeSet>
+    <changeSet author="natalia" id="addUpdatePathTrigger">
+        <sql>
+            DROP TRIGGER IF EXISTS parent_path_tgr ON hr_digdes_schema.departments;
+            CREATE TRIGGER parent_path_tgr
+                BEFORE INSERT OR UPDATE ON hr_digdes_schema.departments
+                    FOR EACH ROW EXECUTE PROCEDURE update_section_parent_path();
+        </sql>
+        <rollback>
+            DROP TRIGGER parent_path_tgr ON hr_digdes_schema.departments;
+        </rollback>
     </changeSet>
 </databaseChangeLog>
