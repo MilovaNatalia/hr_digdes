@@ -14,6 +14,13 @@ public class Employee {
     private Long department_id;
     private Long position_id;
 
+    public Employee() {
+    }
+
+    public Employee(Long department_id) {
+        this.department_id = department_id;
+    }
+
     public Long getId() {
         return id;
     }

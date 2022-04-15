@@ -1,8 +1,10 @@
 package dao.impl;
 
 import dao.Dao;
+import dto.EmployeeDto;
 import models.*;
 import util.C3p0DataSource;
+import util.Mapper;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,21 +14,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class EmployeeDao implements Dao<Employee> {
-    private String schemaName;
-
-    public EmployeeDao(String schemaName) {
-        this.schemaName = schemaName;
-    }
+public class EmployeeDao implements Dao<EmployeeDto> {
 
     @Override
-    public Optional<Employee> get(long id) {
+    public Optional<EmployeeDto> get(long id) {
         try (Connection connection = C3p0DataSource.getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement(String.format("SELECT * FROM %s.employees WHERE id=?", schemaName));
+            PreparedStatement prepared = connection.prepareStatement("SELECT * FROM employees WHERE id=?");
             prepared.setLong(1, id);
             ResultSet resultSet = prepared.executeQuery();
             if (resultSet.next())
-                return Optional.of(getEmployee(resultSet));
+                return Optional.of(Mapper.mapEmployee(getEmployee(resultSet)));
         } catch (SQLException e) {
             e.printStackTrace();
             //todo: log this
@@ -35,14 +32,14 @@ public class EmployeeDao implements Dao<Employee> {
     }
 
     @Override
-    public List<Employee> getAll() {
+    public List<EmployeeDto> getAll() {
         //todo: pagination
-        List<Employee> employees = new ArrayList<>();
+        List<EmployeeDto> employees = new ArrayList<>();
         try (Connection connection = C3p0DataSource.getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement(String.format("SELECT * FROM %s.employees", schemaName));
+            PreparedStatement prepared = connection.prepareStatement("SELECT * FROM employees");
             ResultSet resultSet = prepared.executeQuery();
             while (resultSet.next()) {
-                employees.add(getEmployee(resultSet));
+                employees.add(Mapper.mapEmployee(getEmployee(resultSet)));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -52,12 +49,13 @@ public class EmployeeDao implements Dao<Employee> {
     }
 
     @Override
-    public boolean save(Employee employee) {
+    public boolean save(EmployeeDto dto) {
+        Employee employee = Mapper.mapEmployeeDto(dto);
         try (Connection connection = C3p0DataSource.getConnection()) {
             PreparedStatement prepared = connection.prepareStatement(
-                    String.format("INSERT INTO %s.employees " +
+                    "INSERT INTO employees " +
                             "(first_name, last_name, patronymic, gender, birth_date, email, department_id, position_id) " +
-                            "VALUES (?,?,?,?,?,?,?,?)", schemaName));
+                            "VALUES (?,?,?,?,?,?,?,?)");
             prepared.setString(1, employee.getFirstName());
             prepared.setString(2, employee.getLastName());
             prepared.setString(3, employee.getPatronymic());
@@ -76,10 +74,10 @@ public class EmployeeDao implements Dao<Employee> {
     }
 
     @Override
-    public boolean update(Employee employee) {
+    public boolean update(EmployeeDto dto) {
+        Employee employee = Mapper.mapEmployeeDto(dto);
         try (Connection connection = C3p0DataSource.getConnection()) {
-            String statement = String.format("UPDATE %s.employees SET %s WHERE id=%d",
-                    schemaName, getStatementArgs(employee, ","), employee.getId());
+            String statement = String.format("UPDATE employees SET %s WHERE id=%d", getStatementArgs(employee, ","), employee.getId());
             PreparedStatement prepared = connection.prepareStatement(statement);
             if (prepared.executeUpdate() > 0)
                 return true;
@@ -91,9 +89,10 @@ public class EmployeeDao implements Dao<Employee> {
     }
 
     @Override
-    public boolean delete(Employee employee) {
+    public boolean delete(EmployeeDto dto) {
+        Employee employee = Mapper.mapEmployeeDto(dto);
         try (Connection connection = C3p0DataSource.getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement(String.format("DELETE FROM %s.employees WHERE id=?", schemaName));
+            PreparedStatement prepared = connection.prepareStatement("DELETE FROM employees WHERE id=?");
             prepared.setLong(1, employee.getId());
             if (prepared.executeUpdate() > 0)
                 return true;
@@ -105,20 +104,20 @@ public class EmployeeDao implements Dao<Employee> {
     }
 
     @Override
-    public List<Employee> simpleSearch(Employee employee) {
-        List<Employee> employees = new ArrayList<>();
+    public List<EmployeeDto> simpleSearch(EmployeeDto dto) {
+        Employee employee = Mapper.mapEmployeeDto(dto);
+        List<EmployeeDto> employees = new ArrayList<>();
         try (Connection connection = C3p0DataSource.getConnection()) {
             if (employee.getId() != null){
-                Optional<Employee> employeeById = get(employee.getId());
+                Optional<EmployeeDto> employeeById = get(employee.getId());
                 employeeById.ifPresent(employees::add);
                 return employees;
             }
-            String statement = String.format("SELECT * FROM %s.employees WHERE %s",
-                    schemaName, getStatementArgs(employee, " AND "));
+            String statement = String.format("SELECT * FROM employees WHERE %s", getStatementArgs(employee, " AND "));
             PreparedStatement prepared = connection.prepareStatement(statement);
             ResultSet resultSet = prepared.executeQuery();
             while (resultSet.next())
-                employees.add(getEmployee(resultSet));
+                employees.add(Mapper.mapEmployee(getEmployee(resultSet)));
         } catch (SQLException e) {
             e.printStackTrace();
             //todo: log this

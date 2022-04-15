@@ -15,7 +15,7 @@ public class C3p0DataSource {
     static {
         try {
             cpds.setDriverClass("org.postgresql.Driver");
-            cpds.setJdbcUrl("jdbc:postgresql://localhost:5432/hr_digdes_db");
+            cpds.setJdbcUrl("jdbc:postgresql://localhost:5432/test_hr_digdes_db");
             cpds.setUser("hr_digdes_db_admin");
             cpds.setPassword("digdes");
         } catch (PropertyVetoException e) {
@@ -24,7 +24,12 @@ public class C3p0DataSource {
         }
 
     }
+
     public static Connection getConnection() throws SQLException {
         return cpds.getConnection();
+    }
+
+    public static Connection getTestConnection(){
+        return null;
     }
 }

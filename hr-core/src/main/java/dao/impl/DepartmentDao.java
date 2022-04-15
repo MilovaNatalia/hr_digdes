@@ -1,30 +1,28 @@
 package dao.impl;
 
 import dao.Dao;
+import dto.DepartmentDto;
 import models.*;
 import util.C3p0DataSource;
+import util.Mapper;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class DepartmentDao implements Dao<Department> {
+public class DepartmentDao implements Dao<DepartmentDto> {
     private String schemaName;
 
-    public DepartmentDao(String schemaName) {
-        this.schemaName = schemaName;
-    }
-
     @Override
-    public Optional<Department> get(long id) {
+    public Optional<DepartmentDto> get(long id) {
         try (Connection connection = C3p0DataSource.getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement(String.format("SELECT * FROM %s.departments WHERE id=?", schemaName));
+            PreparedStatement prepared = connection.prepareStatement("SELECT * FROM departments WHERE id=?");
             prepared.setLong(1, id);
             ResultSet resultSet = prepared.executeQuery();
             if (resultSet.next()){
                 Department department = getDepartment(resultSet);
-                return Optional.of(department);
+                return Optional.of(Mapper.mapDepartment(department));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -34,14 +32,14 @@ public class DepartmentDao implements Dao<Department> {
     }
 
     @Override
-    public List<Department> getAll() {
+    public List<DepartmentDto> getAll() {
         //todo: pagination
-        List<Department> departments = new ArrayList<>();
+        List<DepartmentDto> departments = new ArrayList<>();
         try (Connection connection = C3p0DataSource.getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement(String.format("SELECT * FROM %s.departments", schemaName));
+            PreparedStatement prepared = connection.prepareStatement("SELECT * FROM departments");
             ResultSet resultSet = prepared.executeQuery();
             while (resultSet.next()) {
-                departments.add(getDepartment(resultSet));
+                departments.add(Mapper.mapDepartment(getDepartment(resultSet)));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -51,10 +49,11 @@ public class DepartmentDao implements Dao<Department> {
     }
 
     @Override
-    public boolean save(Department department) {
+    public boolean save(DepartmentDto dto) {
         //todo: db trigger on insert
+        Department department = Mapper.mapDepartmentDto(dto);
         try (Connection connection = C3p0DataSource.getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement(String.format("INSERT INTO %s.departments (name, type_id, head_id, parent_id) VALUES (?,?,?,?)", schemaName));
+            PreparedStatement prepared = connection.prepareStatement("INSERT INTO departments (name, type_id, head_id, parent_id) VALUES (?,?,?,?)");
             prepared.setString(1,department.getName());
             prepared.setLong(2,department.getType_id());
             if (department.getHead_id() == null)
@@ -75,11 +74,11 @@ public class DepartmentDao implements Dao<Department> {
     }
 
     @Override
-    public boolean update(Department department) {
+    public boolean update(DepartmentDto dto) {
         //todo: db trigger on update
+        Department department = Mapper.mapDepartmentDto(dto);
         try (Connection connection = C3p0DataSource.getConnection()) {
-            String statement = String.format("UPDATE %s.departments SET %s WHERE id=%d",
-                    schemaName,getStatementArgs(department, ","), department.getId());
+            String statement = String.format("UPDATE departments SET %s WHERE id=%d", getStatementArgs(department, ","), department.getId());
             PreparedStatement prepared = connection.prepareStatement(statement);
             if (prepared.executeUpdate() > 0)
                 return true;
@@ -91,10 +90,11 @@ public class DepartmentDao implements Dao<Department> {
     }
 
     @Override
-    public boolean delete(Department department) {
+    public boolean delete(DepartmentDto dto) {
         //todo: db trigger on delete
+        Department department = Mapper.mapDepartmentDto(dto);
         try (Connection connection = C3p0DataSource.getConnection()) {
-            PreparedStatement prepared = connection.prepareStatement(String.format("DELETE FROM %s.departments WHERE id=?", schemaName));
+            PreparedStatement prepared = connection.prepareStatement("DELETE FROM departments WHERE id=?");
             prepared.setLong(1, department.getId());
             if (prepared.executeUpdate() > 0)
                 return true;
@@ -106,20 +106,20 @@ public class DepartmentDao implements Dao<Department> {
     }
 
     @Override
-    public List<Department> simpleSearch(Department department) {
-        List<Department> departments = new ArrayList<>();
+    public List<DepartmentDto> simpleSearch(DepartmentDto dto) {
+        Department department = Mapper.mapDepartmentDto(dto);
+        List<DepartmentDto> departments = new ArrayList<>();
         try (Connection connection = C3p0DataSource.getConnection()) {
             if (department.getId() != null){
-                Optional<Department> departmentById = get(department.getId());
+                Optional<DepartmentDto> departmentById = get(department.getId());
                 departmentById.ifPresent(departments::add);
                 return departments;
             }
-            String statement = String.format("SELECT * FROM %s.departments WHERE %s",
-                    schemaName, getStatementArgs(department, " AND "));
+            String statement = String.format("SELECT * FROM departments WHERE %s", getStatementArgs(department, " AND "));
             PreparedStatement prepared = connection.prepareStatement(statement);
             ResultSet resultSet = prepared.executeQuery();
             while (resultSet.next())
-                departments.add(getDepartment(resultSet));
+                departments.add(Mapper.mapDepartment(getDepartment(resultSet)));
         } catch (SQLException e) {
             e.printStackTrace();
             //todo: log this

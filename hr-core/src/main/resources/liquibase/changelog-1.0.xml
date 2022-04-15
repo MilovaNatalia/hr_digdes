@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.0.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.0.xsd">
     <changeSet author="natalia" id="create_table_positions">
-        <createTable tableName="positions" schemaName="hr_digdes_schema">
+        <createTable tableName="positions">
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -11,7 +11,7 @@
         </createTable>
     </changeSet>
     <changeSet author="natalia" id="create_table_department_types">
-        <createTable tableName="department_types" schemaName="hr_digdes_schema">
+        <createTable tableName="department_types">
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -21,7 +21,7 @@
         </createTable>
     </changeSet>
     <changeSet author="natalia" id="create_table_employees">
-        <createTable tableName="employees" schemaName="hr_digdes_schema">
+        <createTable tableName="employees">
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -50,7 +50,7 @@
         </createTable>
     </changeSet>
     <changeSet author="natalia" id="create_table_departments">
-        <createTable tableName="departments" schemaName="hr_digdes_schema">
+        <createTable tableName="departments">
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -66,7 +66,7 @@
         </createTable>
     </changeSet>
     <changeSet author="natalia" id="create_table_users">
-        <createTable tableName="users" schemaName="hr_digdes_schema">
+        <createTable tableName="users">
             <column name="username" type="varchar(250)">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -84,46 +84,35 @@
     <changeSet author="natalia" id="addForeignKeyConstraints">
         <addForeignKeyConstraint baseColumnNames="department_id"
                                  baseTableName="employees"
-                                 baseTableSchemaName="hr_digdes_schema"
                                  constraintName="fk_employee_department"
                                  referencedColumnNames="id"
-                                 referencedTableName="departments"
-                                 referencedTableSchemaName="hr_digdes_schema"/>
+                                 referencedTableName="departments"/>
         <addForeignKeyConstraint baseColumnNames="position_id"
                                  baseTableName="employees"
-                                 baseTableSchemaName="hr_digdes_schema"
                                  constraintName="fk_employee_position"
                                  referencedColumnNames="id"
-                                 referencedTableName="positions"
-                                 referencedTableSchemaName="hr_digdes_schema"/>
+                                 referencedTableName="positions"/>
         <addForeignKeyConstraint baseColumnNames="type_id"
                                  baseTableName="departments"
-                                 baseTableSchemaName="hr_digdes_schema"
                                  constraintName="fk_department_type"
                                  referencedColumnNames="id"
-                                 referencedTableName="department_types"
-                                 referencedTableSchemaName="hr_digdes_schema"/>
+                                 referencedTableName="department_types"/>
         <addForeignKeyConstraint baseColumnNames="head_id"
                                  baseTableName="departments"
-                                 baseTableSchemaName="hr_digdes_schema"
                                  constraintName="fk_department_head"
                                  referencedColumnNames="id"
                                  referencedTableName="employees"
-                                 referencedTableSchemaName="hr_digdes_schema"/>
+        />
         <addForeignKeyConstraint baseColumnNames="parent_id"
                                  baseTableName="departments"
-                                 baseTableSchemaName="hr_digdes_schema"
                                  constraintName="fk_department_department"
                                  referencedColumnNames="id"
-                                 referencedTableName="departments"
-                                 referencedTableSchemaName="hr_digdes_schema"/>
+                                 referencedTableName="departments"/>
         <addForeignKeyConstraint baseColumnNames="employee_id"
                                  baseTableName="users"
-                                 baseTableSchemaName="hr_digdes_schema"
                                  constraintName="fk_user_employee"
                                  referencedColumnNames="id"
-                                 referencedTableName="employees"
-                                 referencedTableSchemaName="hr_digdes_schema"/>
+                                 referencedTableName="employees"/>
     </changeSet>
     <changeSet author="natalia" id="addProcedureUpdatePath">
         <createProcedure>
@@ -134,7 +123,7 @@
                 IF NEW.parent_id IS NULL THEN
                     NEW.path = 'root'::ltree;
                 ELSEIF TG_OP = 'INSERT' OR OLD.parent_id IS NULL OR OLD.parent_id != NEW.parent_id THEN
-                    SELECT path || id::text FROM hr_digdes_schema.departments WHERE id = NEW.parent_id INTO parent_path;
+                    SELECT path || id::text FROM departments WHERE id = NEW.parent_id INTO parent_path;
                     IF parent_path IS NULL THEN
                         RAISE EXCEPTION 'Invalid parent_id %', NEW.parent_id;
                     END IF;
@@ -152,13 +141,82 @@
     </changeSet>
     <changeSet author="natalia" id="addUpdatePathTrigger">
         <sql>
-            DROP TRIGGER IF EXISTS parent_path_tgr ON hr_digdes_schema.departments;
+            DROP TRIGGER IF EXISTS parent_path_tgr ON departments;
             CREATE TRIGGER parent_path_tgr
-                BEFORE INSERT OR UPDATE ON hr_digdes_schema.departments
+                BEFORE INSERT OR UPDATE ON departments
                     FOR EACH ROW EXECUTE PROCEDURE update_section_parent_path();
         </sql>
         <rollback>
-            DROP TRIGGER parent_path_tgr ON hr_digdes_schema.departments;
+            DROP TRIGGER parent_path_tgr ON departments;
         </rollback>
+    </changeSet>
+    <!--Заполнение тестовой базы-->
+    <changeSet author="natalia" id="insertTestPositions">
+        <insert tableName="positions">
+            <column name="name" value="Junior java programmer" />
+        </insert>
+        <insert tableName="positions">
+            <column name="name" value="Intern java programmer"/>
+        </insert>
+        <insert tableName="positions">
+            <column name="name" value="Senior java programmer"/>
+        </insert>
+        <insert tableName="positions">
+            <column name="name" value="Team lead"/>
+        </insert>
+        <insert tableName="positions">
+            <column name="name" value="Project manager"/>
+        </insert>
+    </changeSet>
+    <changeSet author="natalia" id="insertTestDepartmentTypes">
+        <insert tableName="department_types">
+            <column name="name" value="Company" />
+        </insert>
+        <insert tableName="department_types">
+            <column name="name" value="Service"/>
+        </insert>
+        <insert tableName="department_types">
+            <column name="name" value="Group"/>
+        </insert>
+        <insert tableName="department_types">
+            <column name="name" value="Department"/>
+        </insert>
+    </changeSet>
+    <changeSet author="natalia" id="insertDepartments">
+        <insert tableName="departments">
+            <column name="name" value="It Company"/>
+            <column name="type_id" value="1"/>
+        </insert>
+        <insert tableName="departments">
+            <column name="name" value="HR service"/>
+            <column name="type_id" value="2"/>
+            <column name="parent_id" value="1"/>
+        </insert>
+        <insert tableName="departments">
+            <column name="name" value="Developer service"/>
+            <column name="type_id" value="2"/>
+            <column name="parent_id" value="1"/>
+        </insert>
+    </changeSet>
+    <changeSet author="natalia" id="insertTestEmployees">
+        <insert tableName="employees">
+            <column name="first_name" value="Ivan" />
+            <column name="last_name" value="Ivanov" />
+            <column name="patronymic" value="Ivanovich"/>
+            <column name="gender" value="MALE"/>
+            <column name="birth_date" value="19.04.2021"/>
+            <column name="email" value="example@example.ru"/>
+            <column name="department_id" value="2"/>
+            <column name="position_id" value="4"/>
+        </insert>
+        <insert tableName="employees">
+            <column name="first_name" value="David" />
+            <column name="last_name" value="Jones" />
+            <column name="gender" value="MALE"/>
+            <column name="birth_date" value="01.01.2000"/>
+            <column name="email" value="example2@example.ru"/>
+            <column name="department_id" value="2"/>
+            <column name="position_id" value="1"/>
+        </insert>
     </changeSet>
 </databaseChangeLog>

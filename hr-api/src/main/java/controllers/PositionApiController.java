@@ -1,37 +1,38 @@
-package services;
+package controllers;
 
-import dao.impl.PositionDao;
 import dto.PositionDto;
+import services.PositionDataService;
 
 import java.util.List;
 import java.util.Optional;
 
-public class PositionDataService implements DataService<PositionDto, PositionDto>{
 
-    private PositionDao dao = new PositionDao();
+public class PositionApiController{
+
+    private final PositionDataService dataService = new PositionDataService();
 
     public boolean create(PositionDto info) {
-        return dao.save(info);
+        return dataService.create(info);
     }
 
     public boolean update(PositionDto info) {
-        return dao.update(info);
+        return dataService.update(info);
     }
 
     public boolean delete(PositionDto info) {
-        return dao.delete(info);
+        return dataService.delete(info);
     }
 
     public List<PositionDto> find(PositionDto searchRequest) {
-        return dao.simpleSearch(searchRequest);
+        return dataService.find(searchRequest);
     }
 
     public Optional<PositionDto> get(Long id) {
-        return dao.get(id);
+        return dataService.get(id);
     }
 
     public List<PositionDto> getAll() {
-        return dao.getAll();
+        return dataService.getAll();
     }
 
     public boolean loadFromFile(String fileName) {
