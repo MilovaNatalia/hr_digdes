@@ -1,0 +1,6 @@
+package servlets;
+
+
+class DepartmentServletTest {
+
+}
