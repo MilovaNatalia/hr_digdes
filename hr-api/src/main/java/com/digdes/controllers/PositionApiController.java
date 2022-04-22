@@ -11,6 +11,8 @@ import java.util.Optional;
 @RestController
 @RequestMapping(path = "/positions")
 class PositionApiController{
+
+    //todo: constraints for bad request
     @Autowired
     private PositionDataService dataService;
 

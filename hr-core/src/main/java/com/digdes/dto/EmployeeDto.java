@@ -17,28 +17,13 @@ public class EmployeeDto {
     private String email;
     private EmployeeGender gender;
     private Timestamp birthDate;
-
-    private Department department;
-    private Position position;
+    private Long departmentId;
+    private Long positionId;
 
     public EmployeeDto() {
     }
-
     public EmployeeDto(Long id) {
         this.id = id;
-    }
-
-    public EmployeeDto(Long id, String firstName, String lastName, String patronymic, String email, EmployeeGender gender,
-                       Timestamp birthDate, Department department, Position position) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.patronymic = patronymic;
-        this.email = email;
-        this.gender = gender;
-        this.birthDate = birthDate;
-        this.department = department;
-        this.position = position;
     }
 
     public Long getId() {
@@ -97,20 +82,20 @@ public class EmployeeDto {
         this.birthDate = birthDate;
     }
 
-    public Department getDepartment() {
-        return department;
+    public Long getDepartmentId() {
+        return departmentId;
     }
 
-    public void setDepartment(Department department) {
-        this.department = department;
+    public void setDepartmentId(Long departmentId) {
+        this.departmentId = departmentId;
     }
 
-    public Position getPosition() {
-        return position;
+    public Long getPositionId() {
+        return positionId;
     }
 
-    public void setPosition(Position position) {
-        this.position = position;
+    public void setPositionId(Long positionId) {
+        this.positionId = positionId;
     }
 
     @Override
@@ -118,11 +103,11 @@ public class EmployeeDto {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         EmployeeDto that = (EmployeeDto) o;
-        return Objects.equals(id, that.id) && Objects.equals(firstName, that.firstName) && Objects.equals(lastName, that.lastName) && Objects.equals(patronymic, that.patronymic) && Objects.equals(email, that.email) && gender == that.gender && Objects.equals(birthDate, that.birthDate) && Objects.equals(department, that.department) && Objects.equals(position, that.position);
+        return Objects.equals(id, that.id) && Objects.equals(firstName, that.firstName) && Objects.equals(lastName, that.lastName) && Objects.equals(patronymic, that.patronymic) && Objects.equals(email, that.email) && gender == that.gender && Objects.equals(birthDate, that.birthDate) && Objects.equals(departmentId, that.departmentId) && Objects.equals(positionId, that.positionId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstName, lastName, patronymic, email, gender, birthDate, department, position);
+        return Objects.hash(id, firstName, lastName, patronymic, email, gender, birthDate, departmentId, positionId);
     }
 }

@@ -3,7 +3,6 @@ package com.digdes.services;
 import com.digdes.dto.PositionDto;
 import com.digdes.models.Position;
 import com.digdes.repositories.PositionRepository;
-import com.digdes.util.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
@@ -21,13 +20,13 @@ public class PositionDataService{
 
     @Transactional
     public PositionDto save (PositionDto info) {
-        Position position = Mapper.mapDtoToPosition(info);
-        return Mapper.mapPositionToDto(repository.save(position));
+        Position position = mapDtoToPosition(info);
+        return this.mapPositionToDto(repository.save(position));
     }
 
     @Transactional
     public boolean delete(PositionDto info) {
-        Position position = Mapper.mapDtoToPosition(info);
+        Position position = mapDtoToPosition(info);
         repository.delete(position);
         return !repository.existsById(position.getId());
     }
@@ -35,26 +34,33 @@ public class PositionDataService{
     @Transactional
     public List<PositionDto> find(PositionDto searchRequest) {
         return repository.findAll(
-                Example.of(
-                        Mapper.mapDtoToPosition(searchRequest)))
-                        .stream().map(Mapper::mapPositionToDto)
+                Example.of(mapDtoToPosition(searchRequest)))
+                        .stream().map(this::mapPositionToDto)
                         .collect(Collectors.toList());
     }
 
     @Transactional
     public Optional<PositionDto> get(Long id) {
         Optional<Position> position = repository.findById(id);
-        return position.map(Mapper::mapPositionToDto);
+        return position.map(this::mapPositionToDto);
     }
 
     @Transactional
     public List<PositionDto> getAll() {
         return repository.findAll()
-                .stream().map(Mapper::mapPositionToDto)
+                .stream().map(this::mapPositionToDto)
                 .collect(Collectors.toList());
     }
 
     public boolean loadFromFile(String fileName) {
         return false;
+    }
+
+    private PositionDto mapPositionToDto(Position position){
+        return new PositionDto(position.getId(), position.getName());
+    }
+
+    private Position mapDtoToPosition(PositionDto dto){
+        return new Position(dto.getId(), dto.getName());
     }
 }

@@ -1,10 +1,6 @@
 package com.digdes.dto;
 
-import com.digdes.models.Department;
-import com.digdes.models.DepartmentType;
-import com.digdes.models.Employee;
 
-import java.util.List;
 import java.util.Objects;
 
 
@@ -12,25 +8,21 @@ public class DepartmentDto {
     private Long id;
     private String name;
 
-    private DepartmentType type;
+    private Long typeId;
 
-    private List<Employee> employees;
+    private Long headId;
 
-    private Employee head;
-
-    private Department parent;
-
-    public DepartmentDto(Long id, String name, DepartmentType type,
-                         List<Employee> employees, Employee head, Department parent) {
-        this.id = id;
-        this.name = name;
-        this.type = type;
-        this.employees = employees;
-        this.head = head;
-        this.parent = parent;
-    }
+    private Long parentId;
 
     public DepartmentDto() {
+    }
+
+    public DepartmentDto(Long id, String name, Long typeId, Long headId, Long parentId) {
+        this.id = id;
+        this.name = name;
+        this.typeId = typeId;
+        this.headId = headId;
+        this.parentId = parentId;
     }
 
     public Long getId() {
@@ -49,36 +41,28 @@ public class DepartmentDto {
         this.name = name;
     }
 
-    public DepartmentType getType() {
-        return type;
+    public Long getTypeId() {
+        return typeId;
     }
 
-    public void setType(DepartmentType type) {
-        this.type = type;
+    public void setTypeId(Long typeId) {
+        this.typeId = typeId;
     }
 
-    public List<Employee> getEmployees() {
-        return employees;
+    public Long getHeadId() {
+        return headId;
     }
 
-    public void setEmployees(List<Employee> employees) {
-        this.employees = employees;
+    public void setHeadId(Long headId) {
+        this.headId = headId;
     }
 
-    public Employee getHead() {
-        return head;
+    public Long getParentId() {
+        return parentId;
     }
 
-    public void setHead(Employee head) {
-        this.head = head;
-    }
-
-    public Department getParent() {
-        return parent;
-    }
-
-    public void setParent(Department parent) {
-        this.parent = parent;
+    public void setParentId(Long parentId) {
+        this.parentId = parentId;
     }
 
     @Override
@@ -86,12 +70,12 @@ public class DepartmentDto {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DepartmentDto that = (DepartmentDto) o;
-        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(type, that.type) && Objects.equals(employees, that.employees) && Objects.equals(head, that.head) && Objects.equals(parent, that.parent);
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(typeId, that.typeId) && Objects.equals(headId, that.headId) && Objects.equals(parentId, that.parentId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, type, employees, head, parent);
+        return Objects.hash(id, name, typeId, headId, parentId);
     }
 }
 

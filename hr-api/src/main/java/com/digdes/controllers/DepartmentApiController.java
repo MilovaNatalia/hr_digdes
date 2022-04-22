@@ -5,16 +5,16 @@ import com.digdes.dto.DepartmentDto;
 import com.digdes.dto.DepartmentResponseDto;
 import com.digdes.services.DepartmentDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/departments")
 public class DepartmentApiController {
-
+//todo: constraints for bad request
     @Autowired
     private DepartmentDataService dataService;
 
@@ -25,8 +25,9 @@ public class DepartmentApiController {
 
 
     @PutMapping(path = "/update")
-    public DepartmentResponseDto update(@RequestBody DepartmentDto info) {
-        return dataService.save(info);
+    public ResponseEntity<DepartmentResponseDto> update(@RequestBody DepartmentDto info) {
+        DepartmentResponseDto dto = dataService.save(info);
+        return ResponseEntity.ok(dto);
     }
 
 
@@ -42,9 +43,9 @@ public class DepartmentApiController {
     }
 
     @GetMapping(path = "/get/{id}")
-    public DepartmentResponseDto get(@PathVariable Long id) {
-        Optional<DepartmentResponseDto> department = dataService.get(id);
-        return department.orElseGet(DepartmentResponseDto::new);
+    public ResponseEntity<DepartmentResponseDto> get(@PathVariable Long id) {
+        DepartmentResponseDto department = dataService.get(id);
+        return ResponseEntity.ok(department);
     }
 
 

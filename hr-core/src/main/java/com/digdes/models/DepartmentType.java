@@ -2,6 +2,8 @@ package com.digdes.models;
 
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -48,6 +50,7 @@ public class DepartmentType {
     public void setName(String name) {
         this.name = name;
     }
+
 
     @Override
     public boolean equals(Object o) {

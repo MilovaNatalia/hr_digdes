@@ -13,6 +13,8 @@ import java.util.Optional;
 @RequestMapping(path = "/types")
 public class DepartmentTypeApiController{
 
+    //todo: constraints for bad request
+
     @Autowired
     private DepartmentTypeDataService dataService;
 

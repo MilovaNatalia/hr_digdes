@@ -13,6 +13,7 @@ import java.util.Optional;
 @RequestMapping(path = "/employees")
 public class EmployeeApiController{
 
+    //todo: constraints for bad request
     @Autowired
     private EmployeeDataService dataService;
 

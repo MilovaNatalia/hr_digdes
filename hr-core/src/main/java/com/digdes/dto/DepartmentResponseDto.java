@@ -11,8 +11,7 @@ public class DepartmentResponseDto {
     private String typeName;
     private String headName;
     private String parentName;
-    private List<EmployeeDto> employees;
-
+    private List<EmployeeResponseDto> employees;
     public Long getId() {
         return id;
     }
@@ -53,11 +52,11 @@ public class DepartmentResponseDto {
         this.parentName = parentName;
     }
 
-    public List<EmployeeDto> getEmployees() {
+    public List<EmployeeResponseDto> getEmployees() {
         return employees;
     }
 
-    public void setEmployees(List<EmployeeDto> employees) {
+    public void setEmployees(List<EmployeeResponseDto> employees) {
         this.employees = employees;
     }
 

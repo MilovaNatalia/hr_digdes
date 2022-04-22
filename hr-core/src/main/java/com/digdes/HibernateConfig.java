@@ -1,4 +1,4 @@
-package com.digdes.config;
+package com.digdes;
 
 
 import org.springframework.context.annotation.Bean;

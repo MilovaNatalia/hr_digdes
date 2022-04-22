@@ -17,20 +17,21 @@ public class Department {
     @Column(name = "name", unique = true, nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
-    private List<Employee> employees = new ArrayList<>();
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "department")
+    private List<Employee> employees;
 
-    @ManyToOne
-    @JoinColumn(referencedColumnName = "id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "type_id")
     private DepartmentType type;
 
-    @ManyToOne
-    @JoinColumn(referencedColumnName = "id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "head_id")
     private Employee head;
 
-    @ManyToOne
-    @JoinColumn(referencedColumnName = "id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
     private Department parent;
+
 
     public Department() {
     }
@@ -49,14 +50,6 @@ public class Department {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public List<Employee> getEmployees() {
-        return employees;
-    }
-
-    public void setEmployees(List<Employee> employees) {
-        this.employees = employees;
     }
 
     public DepartmentType getType() {
@@ -81,6 +74,14 @@ public class Department {
 
     public void setParent(Department parent) {
         this.parent = parent;
+    }
+
+    public List<Employee> getEmployees() {
+        return employees;
+    }
+
+    public void setEmployees(List<Employee> employees) {
+        this.employees = employees;
     }
 
     @Override

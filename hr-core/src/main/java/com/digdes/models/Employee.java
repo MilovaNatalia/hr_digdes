@@ -32,15 +32,20 @@ public class Employee {
     @Column(name = "birth_date", nullable = false, columnDefinition = "ti")
     private Timestamp birthDate;
 
-    @ManyToOne
-    @JoinColumn(referencedColumnName = "id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
     private Department department;
 
+
     @ManyToOne
-    @JoinColumn(referencedColumnName = "id", nullable = false)
+    @JoinColumn(name="position_id", nullable = false)
     private Position position;
 
     public Employee() {
+    }
+
+    public Employee(Department department) {
+        this.department = department;
     }
 
     public Long getId() {
