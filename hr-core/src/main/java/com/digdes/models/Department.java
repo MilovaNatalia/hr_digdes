@@ -36,6 +36,18 @@ public class Department {
     public Department() {
     }
 
+    public Department(DepartmentType type) {
+        this.type = type;
+    }
+
+    public Department(Employee head) {
+        this.head = head;
+    }
+
+    public Department(Department parent) {
+        this.parent = parent;
+    }
+
     public Long getId() {
         return id;
     }

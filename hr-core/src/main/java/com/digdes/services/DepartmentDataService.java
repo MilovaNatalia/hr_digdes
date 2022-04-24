@@ -2,8 +2,8 @@ package com.digdes.services;
 
 import com.digdes.dto.DepartmentDto;
 import com.digdes.dto.DepartmentResponseDto;
-import com.digdes.dto.EmployeeDto;
 import com.digdes.dto.EmployeeResponseDto;
+import com.digdes.exceptions.EntityDeleteException;
 import com.digdes.exceptions.EntityNotFoundException;
 import com.digdes.models.Department;
 import com.digdes.models.DepartmentType;
@@ -30,32 +30,67 @@ public class DepartmentDataService {
     private DepartmentTypeRepository typeRepository;
 
     @Transactional
-    public DepartmentResponseDto save(DepartmentDto info) {
+    public DepartmentResponseDto create(DepartmentDto info) {
         try {
             Department department = mapDtoToDepartment(info);
-            return mapDepartmentToResponseDto(departmentRepository.save(department));
+            Optional<Department> existingDepartment = departmentRepository.findOne(Example.of(department));
+            return existingDepartment.map(this::mapDepartmentToResponseDto).orElseGet(() -> mapDepartmentToResponseDto(departmentRepository.save(department)));
         }
         catch (EntityNotFoundException exception){
+            //todo: message
+            throw new EntityNotFoundException();
+        }
+    }
+
+
+    @Transactional
+    public DepartmentResponseDto update(DepartmentDto info) {
+        try {
+            Department department = mapDtoToDepartment(info);
+            Optional<Department> updateDepartment = departmentRepository.findById(department.getId());
+            if (!updateDepartment.isPresent())
+                //todo: message
+                throw new EntityNotFoundException();
+            return mapDepartmentToResponseDto(departmentRepository.save(getUpdateDepartment(department, updateDepartment.get())));
+        }
+        catch (EntityNotFoundException exception){
+            //todo: message
             throw new EntityNotFoundException();
         }
     }
 
     @Transactional
     public boolean delete(DepartmentDto info) {
-        Department department = mapDtoToDepartment(info);
-        departmentRepository.delete(department);
-        return !departmentRepository.existsById(department.getId());
+        try {
+            Department department = mapDtoToDepartment(info);
+            if (employeeRepository.findAll(Example.of(new Employee(department))).size() != 0)
+                //todo: message
+                //todo: cascade delete for users
+                throw new EntityDeleteException();
+            if (departmentRepository.findAll(Example.of(new Department(department))).size() != 0)
+                //todo: message
+                throw new EntityDeleteException();
+            departmentRepository.delete(department);
+            return !departmentRepository.existsById(department.getId());
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException();
+        }
     }
 
     @Transactional
     public List<DepartmentResponseDto> find(DepartmentDto searchRequest) {
-        List<DepartmentResponseDto> departments =
-                departmentRepository.findAll(
-                                Example.of(
-                                        mapDtoToDepartment(searchRequest)))
-                        .stream().map(this::mapDepartmentToResponseDto)
-                        .collect(Collectors.toList());;
-        return departments;
+        try {
+            List<DepartmentResponseDto> departments =
+                    departmentRepository.findAll(
+                                    Example.of(
+                                            mapDtoToDepartment(searchRequest)))
+                            .stream().map(this::mapDepartmentToResponseDto)
+                            .collect(Collectors.toList());
+            ;
+            return departments;
+        } catch (EntityNotFoundException e){
+            throw new EntityNotFoundException();
+        }
     }
 
     @Transactional(readOnly = true)
@@ -75,18 +110,6 @@ public class DepartmentDataService {
         return false;
     }
 
-    private DepartmentDto mapDepartmentToDto(Department department){
-        DepartmentDto dto = new DepartmentDto();
-        dto.setId(department.getId());
-        dto.setName(department.getName());
-        if (department.getHead() != null)
-            dto.setHeadId(department.getHead().getId());
-        if (department.getParent() != null)
-            dto.setParentId(department.getParent().getId());
-        dto.setTypeId(department.getType().getId());
-        return dto;
-    }
-
     private Department mapDtoToDepartment(DepartmentDto dto){
         Department department = new Department();
         department.setId(dto.getId());
@@ -96,6 +119,7 @@ public class DepartmentDataService {
             if (type.isPresent())
                 department.setType(type.get());
             else
+                //todo: message
                 throw new EntityNotFoundException();
         }
         if (dto.getHeadId() != null) {
@@ -103,6 +127,7 @@ public class DepartmentDataService {
             if (head.isPresent())
                 department.setHead(head.get());
             else
+                //todo: message
                 throw new EntityNotFoundException();
         }
         if (dto.getParentId() != null) {
@@ -110,6 +135,7 @@ public class DepartmentDataService {
             if (parent.isPresent())
                 department.setParent(parent.get());
             else
+                //todo: message
                 throw new EntityNotFoundException();
         }
         return department;
@@ -151,5 +177,19 @@ public class DepartmentDataService {
             return responseDto;
         }).collect(Collectors.toList());
         return responseDtos;
+    }
+
+    private Department getUpdateDepartment(Department info, Department updateDepartment){
+        if (info.getName() != null)
+            updateDepartment.setName(info.getName());
+        if (info.getHead() != null)
+            updateDepartment.setHead(info.getHead());
+        if (info.getType() != null)
+            updateDepartment.setType(info.getType());
+        if (info.getParent() != null)
+            updateDepartment.setParent(info.getParent());
+        if (info.getEmployees() != null)
+            updateDepartment.setEmployees(info.getEmployees());
+        return updateDepartment;
     }
 }

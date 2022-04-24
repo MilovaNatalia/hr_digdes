@@ -44,6 +44,14 @@ public class Employee {
     public Employee() {
     }
 
+    public Employee(Position position) {
+        this.position = position;
+    }
+
+    public Employee(String email) {
+        this.email = email;
+    }
+
     public Employee(Department department) {
         this.department = department;
     }

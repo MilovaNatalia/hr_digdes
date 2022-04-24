@@ -2,7 +2,6 @@ package com.digdes.dto;
 
 import java.util.Objects;
 
-
 public class PositionDto {
     private Long id;
     private String name;

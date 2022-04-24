@@ -55,7 +55,7 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="name" type="varchar(250)">
-                <constraints unique="true" nullable="false"/>
+                <constraints nullable="false"/>
             </column>
             <column name="type_id" type="bigint">
                 <constraints nullable="false"/>

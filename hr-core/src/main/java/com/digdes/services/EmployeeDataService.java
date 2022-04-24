@@ -2,7 +2,10 @@ package com.digdes.services;
 
 import com.digdes.dto.EmployeeResponseDto;
 import com.digdes.dto.EmployeeDto;
+import com.digdes.exceptions.EntityCreateException;
+import com.digdes.exceptions.EntityDeleteException;
 import com.digdes.exceptions.EntityNotFoundException;
+import com.digdes.exceptions.EntityUpdateException;
 import com.digdes.models.Department;
 import com.digdes.models.Employee;
 import com.digdes.models.Position;
@@ -28,26 +31,70 @@ public class EmployeeDataService {
     private PositionRepository positionRepository;
 
     @Transactional
-    public EmployeeResponseDto save(EmployeeDto info) {
-        Employee employee = mapDtoToEmployee(info);
-        return mapEmployeeToResponseDto(employeeRepository.save(employee));
+    public EmployeeResponseDto create(EmployeeDto info) {
+        try {
+            Employee employee = mapDtoToEmployee(info);
+            Optional<Employee> existingEmployee = employeeRepository.findOne(Example.of(employee));
+            if (employeeRepository.findOne(Example.of(new Employee(employee.getEmail()))).isPresent())
+                //todo: message
+                throw new EntityCreateException();
+            return existingEmployee.map(this::mapEmployeeToResponseDto).orElseGet(() -> mapEmployeeToResponseDto(employeeRepository.save(employee)));
+        } catch (EntityNotFoundException e){
+            //todo: message
+            throw new EntityNotFoundException();
+        }
+    }
+
+    @Transactional
+    public EmployeeResponseDto update(EmployeeDto info) {
+        // todo: get object by id, set up new fields, save into db
+        try{
+            Employee employee = mapDtoToEmployee(info);
+            Optional<Employee> updateEmployee = employeeRepository.findById(employee.getId());
+            if (!updateEmployee.isPresent())
+                //todo: message
+                throw new EntityNotFoundException();
+            if (employee.getEmail() != null) {
+                if (employeeRepository.findOne(Example.of(new Employee(employee.getEmail()))).isPresent())
+                    //todo: message
+                    throw new EntityUpdateException();
+            }
+            return mapEmployeeToResponseDto(employeeRepository.save(getUpdateEmployee(employee, updateEmployee.get())));
+        } catch (EntityNotFoundException e){
+            //todo: message
+            throw new EntityNotFoundException();
+        }
     }
 
     @Transactional
     public boolean delete(EmployeeDto info) {
-        Employee employee = mapDtoToEmployee(info);
-        employeeRepository.delete(employee);
-        return !employeeRepository.existsById(employee.getId());
+        try {
+            Employee employee = mapDtoToEmployee(info);
+            if (departmentRepository.findAll(Example.of(new Department(employee))).size() != 0)
+                //todo: message
+                //todo: cascade delete for users
+                throw new EntityDeleteException();
+            employeeRepository.delete(employee);
+            return !employeeRepository.existsById(employee.getId());
+        } catch (EntityNotFoundException e){
+            throw new EntityNotFoundException();
+        }
     }
 
     @Transactional
     public List<EmployeeResponseDto> find(EmployeeDto searchRequest) {
-        List<EmployeeResponseDto> employees =
-                employeeRepository.findAll(
-                                Example.of(mapDtoToEmployee(searchRequest)))
-                        .stream().map(this::mapEmployeeToResponseDto)
-                        .collect(Collectors.toList());;
-        return employees;
+        try {
+            List<EmployeeResponseDto> employees =
+                    employeeRepository.findAll(
+                                    Example.of(mapDtoToEmployee(searchRequest)))
+                            .stream().map(this::mapEmployeeToResponseDto)
+                            .collect(Collectors.toList());
+            ;
+            return employees;
+        } catch (EntityNotFoundException e){
+            //todo: message
+            throw new EntityNotFoundException();
+        }
     }
 
     @Transactional
@@ -82,6 +129,7 @@ public class EmployeeDataService {
             if (position.isPresent())
                 employee.setPosition(position.get());
             else
+                //todo: message
                 throw new EntityNotFoundException();
         }
         if (dto.getDepartmentId() != null) {
@@ -89,6 +137,7 @@ public class EmployeeDataService {
             if (department.isPresent())
                 employee.setDepartment(department.get());
             else
+                //todo: message
                 throw new EntityNotFoundException();
         }
         return employee;
@@ -109,5 +158,25 @@ public class EmployeeDataService {
         if (employee.getDepartment() != null)
             responseDto.setDepartmentName(employee.getDepartment().getName());
         return responseDto;
+    }
+
+    private Employee getUpdateEmployee (Employee info, Employee updateEmployee){
+        if (info.getFirstName() != null)
+            updateEmployee.setFirstName(info.getFirstName());
+        if (info.getLastName() != null)
+            updateEmployee.setLastName(info.getLastName());
+        if (info.getPatronymic() != null)
+            updateEmployee.setPatronymic(info.getPatronymic());
+        if (info.getBirthDate() != null)
+            updateEmployee.setBirthDate(info.getBirthDate());
+        if (info.getGender() != null)
+            updateEmployee.setGender(info.getGender());
+        if (info.getEmail() != null)
+            updateEmployee.setEmail(info.getEmail());
+        if (info.getDepartment() != null)
+            updateEmployee.setDepartment(info.getDepartment());
+        if (info.getPosition() != null)
+            updateEmployee.setPosition(info.getPosition());
+        return updateEmployee;
     }
 }

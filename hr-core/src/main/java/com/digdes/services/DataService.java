@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DataService<T, S> {
+    //todo: interface for data services
     public boolean create(T info);
 
     public boolean update(T info);

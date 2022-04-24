@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DepartmentTypeRepository extends JpaRepository<DepartmentType, Long> {
+    //todo: triggers for update
 }

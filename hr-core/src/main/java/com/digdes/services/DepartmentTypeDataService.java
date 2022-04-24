@@ -1,7 +1,12 @@
 package com.digdes.services;
 
 import com.digdes.dto.DepartmentTypeDto;
+import com.digdes.exceptions.EntityDeleteException;
+import com.digdes.exceptions.EntityUpdateException;
+import com.digdes.models.Department;
 import com.digdes.models.DepartmentType;
+import com.digdes.models.Employee;
+import com.digdes.repositories.DepartmentRepository;
 import com.digdes.repositories.DepartmentTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -15,24 +20,40 @@ import java.util.stream.Collectors;
 @Service
 public class DepartmentTypeDataService{
     @Autowired
-    private DepartmentTypeRepository repository;
+    private DepartmentTypeRepository typeRepository;
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
 
     @Transactional
-    public DepartmentTypeDto save (DepartmentTypeDto info) {
+    public DepartmentTypeDto create (DepartmentTypeDto info) {
         DepartmentType type = mapDtoToDepartmentType(info);
-        return mapDepartmentTypeToDto(repository.save(type));
+        Optional<DepartmentType> existingType = typeRepository.findOne(Example.of(type));
+        return existingType.map(this::mapDepartmentTypeToDto).orElseGet(() -> mapDepartmentTypeToDto(typeRepository.save(type)));
+    }
+
+    @Transactional
+    public DepartmentTypeDto update (DepartmentTypeDto info) {
+        DepartmentType type = mapDtoToDepartmentType(info);
+        if (typeRepository.findOne(Example.of(new DepartmentType(type.getName()))).isPresent())
+            //todo: message
+            throw new EntityUpdateException();
+        return mapDepartmentTypeToDto(typeRepository.save(type));
     }
 
     @Transactional
     public boolean delete(DepartmentTypeDto info) {
-        DepartmentType type = mapDtoToDepartmentType(info);
-        repository.delete(type);
-        return !repository.existsById(type.getId());
+        DepartmentType type = typeRepository.getById(info.getId());
+        if (departmentRepository.findAll(Example.of(new Department(type))).size() != 0)
+        //todo: message
+            throw new EntityDeleteException();
+        typeRepository.delete(type);
+        return !typeRepository.existsById(type.getId());
     }
 
     @Transactional
     public List<DepartmentTypeDto> find(DepartmentTypeDto searchRequest) {
-        return repository.findAll(
+        return typeRepository.findAll(
                 Example.of(mapDtoToDepartmentType(searchRequest)))
                         .stream().map(this::mapDepartmentTypeToDto)
                         .collect(Collectors.toList());
@@ -40,13 +61,13 @@ public class DepartmentTypeDataService{
 
     @Transactional
     public Optional<DepartmentTypeDto> get(Long id) {
-        Optional<DepartmentType> type = repository.findById(id);
+        Optional<DepartmentType> type = typeRepository.findById(id);
         return type.map(this::mapDepartmentTypeToDto);
     }
 
     @Transactional
     public List<DepartmentTypeDto> getAll() {
-        return repository.findAll()
+        return typeRepository.findAll()
                 .stream().map(this::mapDepartmentTypeToDto)
                 .collect(Collectors.toList());
     }

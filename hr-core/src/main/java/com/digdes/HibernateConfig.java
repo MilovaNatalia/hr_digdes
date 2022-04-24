@@ -24,7 +24,8 @@ import java.util.ResourceBundle;
 @EnableJpaRepositories(basePackages = "com.digdes.repositories")
 @PropertySource("classpath:/db.properties")
 public class HibernateConfig {
-
+//todo: spring boot hibernate config
+//todo: spring boot liquibase
     @Bean
     public DataSource dataSource() throws PropertyVetoException {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
