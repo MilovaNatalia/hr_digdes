@@ -243,7 +243,7 @@
             <column name="patronymic" value="Ivanovich"/>
             <column name="gender" value="MALE"/>
             <column name="birth_date" value="19.04.2021"/>
-            <column name="email" value="example@example.ru"/>
+            <column name="email" value="javaschool2022@gmail.com"/>
             <column name="department_id" value="2"/>
             <column name="position_id" value="4"/>
             <column name="is_head" value="false"/>
@@ -253,7 +253,7 @@
             <column name="last_name" value="Jones" />
             <column name="gender" value="MALE"/>
             <column name="birth_date" value="01.01.2000"/>
-            <column name="email" value="example2@example.ru"/>
+            <column name="email" value="javaschool2022@gmail.com"/>
             <column name="department_id" value="2"/>
             <column name="position_id" value="1"/>
             <column name="is_head" value="false"/>
