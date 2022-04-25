@@ -144,7 +144,6 @@ public class EmployeeDataService {
     }
 
     private EmployeeResponseDto mapEmployeeToResponseDto (Employee employee){
-        //todo:pretty birth date
         EmployeeResponseDto responseDto = new EmployeeResponseDto();
         responseDto.setId(employee.getId());
         responseDto.setFirstName(employee.getFirstName());

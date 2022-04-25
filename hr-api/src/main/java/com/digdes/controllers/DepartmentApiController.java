@@ -3,7 +3,6 @@ package com.digdes.controllers;
 
 import com.digdes.dto.DepartmentDto;
 import com.digdes.dto.DepartmentResponseDto;
-import com.digdes.dto.EmployeeResponseDto;
 import com.digdes.exceptions.EntityCreateException;
 import com.digdes.exceptions.EntityDeleteException;
 import com.digdes.exceptions.EntityNotFoundException;
@@ -11,6 +10,7 @@ import com.digdes.exceptions.EntityUpdateException;
 import com.digdes.services.DepartmentDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,8 +24,10 @@ public class DepartmentApiController {
     @Autowired
     private DepartmentDataService dataService;
 
+
+
     @PostMapping(path = "/create")
-    public ResponseEntity<?> create(@RequestBody DepartmentDto info) {
+    public ResponseEntity<?> create(@RequestBody DepartmentDto info, Authentication authentication) {
         if (info.getId() != null)
             return ResponseEntity.badRequest().body("Department id must be null for create. Use update method");
         if (info.getName() == null || info.getTypeId() == null)
@@ -44,7 +46,8 @@ public class DepartmentApiController {
         if (info.getId() == null)
             return ResponseEntity.badRequest().body("Department id must not be null for update. Use create method");
         if (info.getName() == null && info.getParentId() == null
-                && info.getHeadId() == null && info.getTypeId() == null)
+                && info.getHeadId() == null && info.getTypeId() == null
+                && info.getModeratorId() == null)
             return ResponseEntity.badRequest().body("One of updating fields must not be null");
         try{
             DepartmentResponseDto result = dataService.update(info);
@@ -74,7 +77,7 @@ public class DepartmentApiController {
     public ResponseEntity<?> find(@RequestBody DepartmentDto searchRequest) {
         if (searchRequest.getName() == null && searchRequest.getParentId() == null
                 && searchRequest.getHeadId() == null && searchRequest.getTypeId() == null
-                && searchRequest.getId() == null)
+                && searchRequest.getId() == null && searchRequest.getModeratorId() == null)
             return ResponseEntity.badRequest().body("One of fields must not be null");
         try {
             List<DepartmentResponseDto> result = dataService.find(searchRequest);
@@ -91,6 +94,10 @@ public class DepartmentApiController {
         return ResponseEntity.ok(department);
     }
 
+    @GetMapping(path = "/get/sub_departments")
+    public ResponseEntity<?> getSubDepartments(@RequestParam(name = "id") Long parentId) {
+        return ResponseEntity.ok(dataService.getSubDepartments(parentId));
+    }
 
     @GetMapping(path = "/all")
     public ResponseEntity<?> getAll() {

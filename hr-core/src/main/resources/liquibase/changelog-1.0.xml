@@ -35,7 +35,7 @@
             <column name="gender" type="varchar(100)">
                 <constraints nullable="false"/>
             </column>
-            <column name="birth_date" type="date">
+            <column name="birth_date" type="timestamp">
                 <constraints nullable="false"/>
             </column>
             <column name="email" type="varchar(250)">
@@ -61,6 +61,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="head_id" type="bigint"/>
+            <column name="moderator_id" type="bigint"/>
             <column name="parent_id" type="bigint"/>
             <column name="path" type="ltree"/>
         </createTable>
@@ -73,11 +74,21 @@
             <column name="password" type="varchar(250)">
                 <constraints nullable="false"/>
             </column>
-            <column name="role" type="varchar(250)">
+            <column name="role_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
             <column name="employee_id" type="bigint">
                 <constraints unique="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="natalia" id="create_table_roles">
+        <createTable tableName="roles">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(250)">
+                <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
@@ -102,6 +113,18 @@
                                  constraintName="fk_department_head"
                                  referencedColumnNames="id"
                                  referencedTableName="employees"
+        />
+        <addForeignKeyConstraint baseColumnNames="moderator_id"
+                                 baseTableName="departments"
+                                 constraintName="fk_department_moderator"
+                                 referencedColumnNames="id"
+                                 referencedTableName="employees"
+        />
+        <addForeignKeyConstraint baseColumnNames="role_id"
+                                 baseTableName="users"
+                                 constraintName="fk_user_role"
+                                 referencedColumnNames="id"
+                                 referencedTableName="roles"
         />
         <addForeignKeyConstraint baseColumnNames="parent_id"
                                  baseTableName="departments"

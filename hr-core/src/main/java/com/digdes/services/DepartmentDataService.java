@@ -29,11 +29,17 @@ public class DepartmentDataService {
     @Autowired
     private DepartmentTypeRepository typeRepository;
 
+
+    //todo: get user from authentication, check role, if moderator check his department and subDepartments
+    // and request department
+
     @Transactional
     public DepartmentResponseDto create(DepartmentDto info) {
         try {
             Department department = mapDtoToDepartment(info);
             Optional<Department> existingDepartment = departmentRepository.findOne(Example.of(department));
+            if (department.getModerator() == null)
+                department.setModerator(department.getHead());
             return existingDepartment.map(this::mapDepartmentToResponseDto).orElseGet(() -> mapDepartmentToResponseDto(departmentRepository.save(department)));
         }
         catch (EntityNotFoundException exception){
@@ -100,6 +106,14 @@ public class DepartmentDataService {
     }
 
     @Transactional(readOnly = true)
+    public List<DepartmentResponseDto> getSubDepartments(Long id) {
+        String condition = String.format("*.%d.*",id);
+        return departmentRepository.getSubDepartments(condition)
+                .stream().map(this::mapDepartmentToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public List<DepartmentResponseDto> getAll() {
         return departmentRepository.findAll()
                 .stream().map(this::mapDepartmentToResponseDto)
@@ -126,6 +140,14 @@ public class DepartmentDataService {
             Optional<Employee> head = employeeRepository.findById(dto.getHeadId());
             if (head.isPresent())
                 department.setHead(head.get());
+            else
+                //todo: message
+                throw new EntityNotFoundException();
+        }
+        if (dto.getModeratorId() != null) {
+            Optional<Employee> moderator = employeeRepository.findById(dto.getHeadId());
+            if (moderator.isPresent())
+                department.setHead(moderator.get());
             else
                 //todo: message
                 throw new EntityNotFoundException();
@@ -160,7 +182,6 @@ public class DepartmentDataService {
     }
 
     private List<EmployeeResponseDto> mapEmployeesToResponseDtos (List<Employee> employees){
-        //todo:pretty birth date
         List<EmployeeResponseDto> responseDtos = employees.stream().map(employee -> {
             EmployeeResponseDto responseDto = new EmployeeResponseDto();
             responseDto.setId(employee.getId());
@@ -184,6 +205,8 @@ public class DepartmentDataService {
             updateDepartment.setName(info.getName());
         if (info.getHead() != null)
             updateDepartment.setHead(info.getHead());
+        if (info.getModerator() != null)
+            updateDepartment.setModerator(info.getModerator());
         if (info.getType() != null)
             updateDepartment.setType(info.getType());
         if (info.getParent() != null)

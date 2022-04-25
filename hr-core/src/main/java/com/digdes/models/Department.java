@@ -28,6 +28,10 @@ public class Department {
     @JoinColumn(name = "head_id")
     private Employee head;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "moderator_id")
+    private Employee moderator;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Department parent;
@@ -96,16 +100,24 @@ public class Department {
         this.employees = employees;
     }
 
+    public Employee getModerator() {
+        return moderator;
+    }
+
+    public void setModerator(Employee moderator) {
+        this.moderator = moderator;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Department that = (Department) o;
-        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(employees, that.employees) && Objects.equals(type, that.type) && Objects.equals(head, that.head) && Objects.equals(parent, that.parent);
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(employees, that.employees) && Objects.equals(type, that.type) && Objects.equals(head, that.head) && Objects.equals(moderator, that.moderator) && Objects.equals(parent, that.parent);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, employees, type, head, parent);
+        return Objects.hash(id, name, employees, type, head, moderator, parent);
     }
 }
