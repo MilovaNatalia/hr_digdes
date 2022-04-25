@@ -43,6 +43,9 @@ public class Employee {
     @Column(name = "is_head", nullable = false)
     private Boolean isHead;
 
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id")
+    private Users user;
 
     public Employee() {
     }
@@ -144,16 +147,24 @@ public class Employee {
         isHead = head;
     }
 
+    public Users getUser() {
+        return user;
+    }
+
+    public void setUser(Users user) {
+        this.user = user;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Employee employee = (Employee) o;
-        return Objects.equals(id, employee.id) && Objects.equals(firstName, employee.firstName) && Objects.equals(lastName, employee.lastName) && Objects.equals(patronymic, employee.patronymic) && Objects.equals(email, employee.email) && gender == employee.gender && Objects.equals(birthDate, employee.birthDate) && Objects.equals(department, employee.department) && Objects.equals(position, employee.position) && Objects.equals(isHead, employee.isHead);
+        return Objects.equals(id, employee.id) && Objects.equals(firstName, employee.firstName) && Objects.equals(lastName, employee.lastName) && Objects.equals(patronymic, employee.patronymic) && Objects.equals(email, employee.email) && gender == employee.gender && Objects.equals(birthDate, employee.birthDate) && Objects.equals(department, employee.department) && Objects.equals(position, employee.position) && Objects.equals(isHead, employee.isHead) && Objects.equals(user, employee.user);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstName, lastName, patronymic, email, gender, birthDate, department, position, isHead);
+        return Objects.hash(id, firstName, lastName, patronymic, email, gender, birthDate, department, position, isHead, user);
     }
 }

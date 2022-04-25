@@ -9,6 +9,7 @@ import com.digdes.models.*;
 import com.digdes.repositories.DepartmentRepository;
 import com.digdes.repositories.EmployeeRepository;
 import com.digdes.repositories.PositionRepository;
+import com.digdes.repositories.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,8 @@ public class EmployeeDataService extends DataService{
     private DepartmentRepository departmentRepository;
     @Autowired
     private PositionRepository positionRepository;
+    @Autowired
+    private UsersRepository usersRepository;
 
     @Transactional
     public EmployeeResponseDto create(EmployeeDto info) {
@@ -124,6 +127,13 @@ public class EmployeeDataService extends DataService{
             else
                 throw new EntityNotFoundException("Reference department is not found");
         }
+        if (dto.getUserId() != null) {
+            Optional<Users> user = usersRepository.findById(dto.getUserId());
+            if (user.isPresent())
+                employee.setUser(user.get());
+            else
+                throw new EntityNotFoundException("Reference user is not found");
+        }
         return employee;
     }
 
@@ -156,6 +166,8 @@ public class EmployeeDataService extends DataService{
             updateEmployee.setGender(info.getGender());
         if (info.getEmail() != null)
             updateEmployee.setEmail(info.getEmail());
+        if (info.getUser() != null)
+            updateEmployee.setUser(info.getUser());
         if (info.getHead() != null)
             updateEmployee.setHead(info.getHead());
         if (info.getDepartment() != null)

@@ -38,7 +38,6 @@ public class DepartmentDataService extends DataService{
         try {
             Department department = mapDtoToDepartment(info);
             Optional<Department> existingDepartment = departmentRepository.findOne(Example.of(department));
-            //todo: moderator by default
             return existingDepartment.map(this::mapDepartmentToResponseDto).orElseGet(() -> mapDepartmentToResponseDto(departmentRepository.save(department)));
         }
         catch (EntityNotFoundException e){

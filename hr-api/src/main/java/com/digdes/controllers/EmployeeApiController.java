@@ -30,7 +30,7 @@ public class EmployeeApiController{
                 || info.getBirthDate() == null || info.getGender() == null
                 || info.getEmail() == null || info.getDepartmentId() == null
                 || info.getPositionId() == null || info.getHead() == null)
-            return ResponseEntity.badRequest().body("Only employee patronymic field can be null. Check other fields");
+            return ResponseEntity.badRequest().body("Only employee patronymic and userId fields can be null. Check other fields");
         try{
             if (dataService.checkUser(authentication.getName(), info.getDepartmentId())) {
                 EmployeeResponseDto result = dataService.create(info);
@@ -50,7 +50,8 @@ public class EmployeeApiController{
         if (info.getFirstName() == null && info.getLastName() == null
                 && info.getBirthDate() == null && info.getGender() == null
                 && info.getEmail() == null && info.getDepartmentId() == null
-                && info.getPositionId() == null && info.getPatronymic() == null && info.getHead() == null)
+                && info.getPositionId() == null && info.getPatronymic() == null
+                && info.getHead() == null && info.getUserId() == null)
             return ResponseEntity.badRequest().body("One of updating fields must not be null");
         try{
             if (dataService.checkUser(authentication.getName(), info.getDepartmentId())) {
@@ -86,7 +87,8 @@ public class EmployeeApiController{
                 && searchRequest.getBirthDate() == null && searchRequest.getGender() == null
                 && searchRequest.getEmail() == null && searchRequest.getDepartmentId() == null
                 && searchRequest.getPositionId() == null && searchRequest.getPatronymic() == null
-                && searchRequest.getId() == null && searchRequest.getHead() == null)
+                && searchRequest.getId() == null && searchRequest.getHead() == null
+                && searchRequest.getUserId() == null)
             return ResponseEntity.badRequest().body("One of fields must not be null");
         try {
             List<EmployeeResponseDto> result = dataService.find(searchRequest);
