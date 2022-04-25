@@ -47,6 +47,9 @@
             <column name="position_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
+            <column name="is_head" type="boolean">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
     <changeSet author="natalia" id="create_table_departments">
@@ -60,8 +63,7 @@
             <column name="type_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
-            <column name="head_id" type="bigint"/>
-            <column name="moderator_id" type="bigint"/>
+            <column name="moderator_id" type="varchar(250)"/>
             <column name="parent_id" type="bigint"/>
             <column name="path" type="ltree"/>
         </createTable>
@@ -76,9 +78,6 @@
             </column>
             <column name="role_id" type="bigint">
                 <constraints nullable="false"/>
-            </column>
-            <column name="employee_id" type="bigint">
-                <constraints unique="true"/>
             </column>
         </createTable>
     </changeSet>
@@ -108,17 +107,11 @@
                                  constraintName="fk_department_type"
                                  referencedColumnNames="id"
                                  referencedTableName="department_types"/>
-        <addForeignKeyConstraint baseColumnNames="head_id"
-                                 baseTableName="departments"
-                                 constraintName="fk_department_head"
-                                 referencedColumnNames="id"
-                                 referencedTableName="employees"
-        />
         <addForeignKeyConstraint baseColumnNames="moderator_id"
                                  baseTableName="departments"
                                  constraintName="fk_department_moderator"
-                                 referencedColumnNames="id"
-                                 referencedTableName="employees"
+                                 referencedColumnNames="username"
+                                 referencedTableName="users"
         />
         <addForeignKeyConstraint baseColumnNames="role_id"
                                  baseTableName="users"
@@ -131,11 +124,6 @@
                                  constraintName="fk_department_department"
                                  referencedColumnNames="id"
                                  referencedTableName="departments"/>
-        <addForeignKeyConstraint baseColumnNames="employee_id"
-                                 baseTableName="users"
-                                 constraintName="fk_user_employee"
-                                 referencedColumnNames="id"
-                                 referencedTableName="employees"/>
     </changeSet>
     <changeSet author="natalia" id="addProcedureUpdatePath">
         <createProcedure>
@@ -205,6 +193,24 @@
             <column name="name" value="Department"/>
         </insert>
     </changeSet>
+    <changeSet author="natalia" id="insertRoles">
+        <insert tableName="roles">
+            <column name="name" value="ROLE_ADMIN" />
+        </insert>
+        <insert tableName="roles">
+            <column name="name" value="ROLE_USER" />
+        </insert>
+        <insert tableName="roles">
+            <column name="name" value="ROLE_MODERATOR" />
+        </insert>
+    </changeSet>
+    <changeSet author="natalia" id="insertAdmin">
+        <insert tableName="users">
+            <column name="username" value="admin" />
+            <column name="password" value="$2y$10$pvfIajL2y5UUw3VGL6P4jOH35EYX7hDepEOe2RunqJwHjevHX4dMe"/>
+            <column name="role_id" value="1"/>
+        </insert>
+    </changeSet>
     <changeSet author="natalia" id="insertDepartments">
         <insert tableName="departments">
             <column name="name" value="It Company"/>
@@ -214,6 +220,7 @@
             <column name="name" value="HR service"/>
             <column name="type_id" value="2"/>
             <column name="parent_id" value="1"/>
+            <column name="moderator_id" value="admin"/>
         </insert>
         <insert tableName="departments">
             <column name="name" value="Developer service"/>
@@ -231,6 +238,7 @@
             <column name="email" value="example@example.ru"/>
             <column name="department_id" value="2"/>
             <column name="position_id" value="4"/>
+            <column name="is_head" value="false"/>
         </insert>
         <insert tableName="employees">
             <column name="first_name" value="David" />
@@ -240,6 +248,7 @@
             <column name="email" value="example2@example.ru"/>
             <column name="department_id" value="2"/>
             <column name="position_id" value="1"/>
+            <column name="is_head" value="false"/>
         </insert>
     </changeSet>
 </databaseChangeLog>

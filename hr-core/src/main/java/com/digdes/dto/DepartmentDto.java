@@ -7,31 +7,19 @@ import java.util.Objects;
 public class DepartmentDto {
     private Long id;
     private String name;
-
     private Long typeId;
 
-    private Long headId;
-
-    private Long moderatorId;
+    private String moderatorId;
 
     private Long parentId;
 
     public DepartmentDto() {
     }
 
-    public DepartmentDto(Long id, String name, Long typeId, Long headId, Long parentId) {
+    public DepartmentDto(Long id, String name, Long typeId, String moderatorId, Long parentId) {
         this.id = id;
         this.name = name;
         this.typeId = typeId;
-        this.headId = headId;
-        this.parentId = parentId;
-    }
-
-    public DepartmentDto(Long id, String name, Long typeId, Long headId, Long moderatorId, Long parentId) {
-        this.id = id;
-        this.name = name;
-        this.typeId = typeId;
-        this.headId = headId;
         this.moderatorId = moderatorId;
         this.parentId = parentId;
     }
@@ -60,12 +48,12 @@ public class DepartmentDto {
         this.typeId = typeId;
     }
 
-    public Long getHeadId() {
-        return headId;
+    public String getModeratorId() {
+        return moderatorId;
     }
 
-    public void setHeadId(Long headId) {
-        this.headId = headId;
+    public void setModeratorId(String moderatorId) {
+        this.moderatorId = moderatorId;
     }
 
     public Long getParentId() {
@@ -76,25 +64,17 @@ public class DepartmentDto {
         this.parentId = parentId;
     }
 
-    public Long getModeratorId() {
-        return moderatorId;
-    }
-
-    public void setModeratorId(Long moderatorId) {
-        this.moderatorId = moderatorId;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DepartmentDto that = (DepartmentDto) o;
-        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(typeId, that.typeId) && Objects.equals(headId, that.headId) && Objects.equals(moderatorId, that.moderatorId) && Objects.equals(parentId, that.parentId);
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(typeId, that.typeId) && Objects.equals(moderatorId, that.moderatorId) && Objects.equals(parentId, that.parentId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, typeId, headId, moderatorId, parentId);
+        return Objects.hash(id, name, typeId, moderatorId, parentId);
     }
 }
 

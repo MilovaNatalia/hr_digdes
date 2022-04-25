@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
-import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -31,10 +29,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/departments/get/**", "/departments/all", "/employees/all", "/employees/get/**")
-                    .hasAnyRole(Role.ADMIN, Role.MODERATOR, Role.USER)
-                //todo: Moderator role?
-                .and().authorizeRequests().antMatchers("/departments/update/", "/employees/update")
+                .antMatchers("/departments/get/**", "/departments/find/", "/departments/all/","/employees/find/", "/employees/all/", "/employees/get/**")
+                    .hasAnyRole(Role.USER, Role.MODERATOR, Role.ADMIN)
+                .and().authorizeRequests().antMatchers("/employees/**","/departments/**")
                     .hasAnyRole(Role.MODERATOR, Role.ADMIN)
                 .and().authorizeRequests().antMatchers("/**")
                     .hasAnyRole(Role.ADMIN)

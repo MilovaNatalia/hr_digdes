@@ -24,13 +24,9 @@ public class Department {
     @JoinColumn(name = "type_id")
     private DepartmentType type;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "head_id")
-    private Employee head;
-
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "moderator_id")
-    private Employee moderator;
+    private Users moderator;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
@@ -42,10 +38,6 @@ public class Department {
 
     public Department(DepartmentType type) {
         this.type = type;
-    }
-
-    public Department(Employee head) {
-        this.head = head;
     }
 
     public Department(Department parent) {
@@ -68,6 +60,14 @@ public class Department {
         this.name = name;
     }
 
+    public List<Employee> getEmployees() {
+        return employees;
+    }
+
+    public void setEmployees(List<Employee> employees) {
+        this.employees = employees;
+    }
+
     public DepartmentType getType() {
         return type;
     }
@@ -76,12 +76,12 @@ public class Department {
         this.type = type;
     }
 
-    public Employee getHead() {
-        return head;
+    public Users getModerator() {
+        return moderator;
     }
 
-    public void setHead(Employee head) {
-        this.head = head;
+    public void setModerator(Users moderator) {
+        this.moderator = moderator;
     }
 
     public Department getParent() {
@@ -92,32 +92,16 @@ public class Department {
         this.parent = parent;
     }
 
-    public List<Employee> getEmployees() {
-        return employees;
-    }
-
-    public void setEmployees(List<Employee> employees) {
-        this.employees = employees;
-    }
-
-    public Employee getModerator() {
-        return moderator;
-    }
-
-    public void setModerator(Employee moderator) {
-        this.moderator = moderator;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Department that = (Department) o;
-        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(employees, that.employees) && Objects.equals(type, that.type) && Objects.equals(head, that.head) && Objects.equals(moderator, that.moderator) && Objects.equals(parent, that.parent);
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(employees, that.employees) && Objects.equals(type, that.type) && Objects.equals(moderator, that.moderator) && Objects.equals(parent, that.parent);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, employees, type, head, moderator, parent);
+        return Objects.hash(id, name, employees, type, moderator, parent);
     }
 }

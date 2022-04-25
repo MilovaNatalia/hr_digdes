@@ -10,8 +10,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SecurityUserDetailsService implements UserDetailsService{
@@ -21,11 +21,12 @@ public class SecurityUserDetailsService implements UserDetailsService{
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Users user = repository.getById(username);
-        if(user == null) {
+        Optional<Users> userOptional = repository.findById(username);
+        if(!userOptional.isPresent()) {
             throw new UsernameNotFoundException("User not found " + username);
         }
 
+        Users user = userOptional.get();
         List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(user.getRole().getName()));
         return new User(user.getUsername(), user.getPassword(), authorities);
     }

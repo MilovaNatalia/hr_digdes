@@ -1,5 +1,7 @@
 package com.digdes.exceptions;
 
 public class EntityNotFoundException extends RuntimeException{
-    //todo: message
+    public EntityNotFoundException(String message) {
+        super(message);
+    }
 }

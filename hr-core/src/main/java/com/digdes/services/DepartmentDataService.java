@@ -5,12 +5,11 @@ import com.digdes.dto.DepartmentResponseDto;
 import com.digdes.dto.EmployeeResponseDto;
 import com.digdes.exceptions.EntityDeleteException;
 import com.digdes.exceptions.EntityNotFoundException;
-import com.digdes.models.Department;
-import com.digdes.models.DepartmentType;
-import com.digdes.models.Employee;
+import com.digdes.models.*;
 import com.digdes.repositories.DepartmentRepository;
 import com.digdes.repositories.DepartmentTypeRepository;
 import com.digdes.repositories.EmployeeRepository;
+import com.digdes.repositories.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class DepartmentDataService {
+public class DepartmentDataService extends DataService{
+
+    //todo: transactonal
     @Autowired
     private DepartmentRepository departmentRepository;
     @Autowired
@@ -29,22 +30,19 @@ public class DepartmentDataService {
     @Autowired
     private DepartmentTypeRepository typeRepository;
 
-
-    //todo: get user from authentication, check role, if moderator check his department and subDepartments
-    // and request department
+    @Autowired
+    private UsersRepository usersRepository;
 
     @Transactional
     public DepartmentResponseDto create(DepartmentDto info) {
         try {
             Department department = mapDtoToDepartment(info);
             Optional<Department> existingDepartment = departmentRepository.findOne(Example.of(department));
-            if (department.getModerator() == null)
-                department.setModerator(department.getHead());
+            //todo: moderator by default
             return existingDepartment.map(this::mapDepartmentToResponseDto).orElseGet(() -> mapDepartmentToResponseDto(departmentRepository.save(department)));
         }
-        catch (EntityNotFoundException exception){
-            //todo: message
-            throw new EntityNotFoundException();
+        catch (EntityNotFoundException e){
+            throw new EntityNotFoundException(e.getMessage());
         }
     }
 
@@ -55,13 +53,11 @@ public class DepartmentDataService {
             Department department = mapDtoToDepartment(info);
             Optional<Department> updateDepartment = departmentRepository.findById(department.getId());
             if (!updateDepartment.isPresent())
-                //todo: message
-                throw new EntityNotFoundException();
+                throw new EntityNotFoundException("Updated department is not found");
             return mapDepartmentToResponseDto(departmentRepository.save(getUpdateDepartment(department, updateDepartment.get())));
         }
-        catch (EntityNotFoundException exception){
-            //todo: message
-            throw new EntityNotFoundException();
+        catch (EntityNotFoundException e){
+            throw new EntityNotFoundException(e.getMessage());
         }
     }
 
@@ -70,32 +66,26 @@ public class DepartmentDataService {
         try {
             Department department = mapDtoToDepartment(info);
             if (employeeRepository.findAll(Example.of(new Employee(department))).size() != 0)
-                //todo: message
-                //todo: cascade delete for users
-                throw new EntityDeleteException();
+                throw new EntityDeleteException("Reference on this department in table employees (department_id)");
             if (departmentRepository.findAll(Example.of(new Department(department))).size() != 0)
-                //todo: message
-                throw new EntityDeleteException();
+                throw new EntityDeleteException("Reference on this department in table department (parent_id)");
             departmentRepository.delete(department);
             return !departmentRepository.existsById(department.getId());
         } catch (EntityNotFoundException e) {
-            throw new EntityNotFoundException();
+            throw new EntityNotFoundException(e.getMessage());
         }
     }
 
     @Transactional
     public List<DepartmentResponseDto> find(DepartmentDto searchRequest) {
         try {
-            List<DepartmentResponseDto> departments =
-                    departmentRepository.findAll(
-                                    Example.of(
-                                            mapDtoToDepartment(searchRequest)))
-                            .stream().map(this::mapDepartmentToResponseDto)
-                            .collect(Collectors.toList());
-            ;
-            return departments;
+            return departmentRepository.findAll(
+                            Example.of(
+                                    mapDtoToDepartment(searchRequest)))
+                    .stream().map(this::mapDepartmentToResponseDto)
+                    .collect(Collectors.toList());
         } catch (EntityNotFoundException e){
-            throw new EntityNotFoundException();
+            throw new EntityNotFoundException(e.getMessage());
         }
     }
 
@@ -105,13 +95,6 @@ public class DepartmentDataService {
         return department.map(this::mapDepartmentToResponseDto).orElseGet(DepartmentResponseDto::new);
     }
 
-    @Transactional(readOnly = true)
-    public List<DepartmentResponseDto> getSubDepartments(Long id) {
-        String condition = String.format("*.%d.*",id);
-        return departmentRepository.getSubDepartments(condition)
-                .stream().map(this::mapDepartmentToResponseDto)
-                .collect(Collectors.toList());
-    }
 
     @Transactional(readOnly = true)
     public List<DepartmentResponseDto> getAll() {
@@ -133,32 +116,21 @@ public class DepartmentDataService {
             if (type.isPresent())
                 department.setType(type.get());
             else
-                //todo: message
-                throw new EntityNotFoundException();
+                throw new EntityNotFoundException("Reference department type is not found");
         }
-        if (dto.getHeadId() != null) {
-            Optional<Employee> head = employeeRepository.findById(dto.getHeadId());
-            if (head.isPresent())
-                department.setHead(head.get());
-            else
-                //todo: message
-                throw new EntityNotFoundException();
-        }
-        if (dto.getModeratorId() != null) {
-            Optional<Employee> moderator = employeeRepository.findById(dto.getHeadId());
+        if (dto.getModeratorId() != null){
+            Optional<Users> moderator = usersRepository.findById(dto.getModeratorId());
             if (moderator.isPresent())
-                department.setHead(moderator.get());
+                department.setModerator(moderator.get());
             else
-                //todo: message
-                throw new EntityNotFoundException();
+                throw new EntityNotFoundException("Reference moderator is not found");
         }
         if (dto.getParentId() != null) {
             Optional<Department> parent = departmentRepository.findById(dto.getParentId());
             if (parent.isPresent())
                 department.setParent(parent.get());
             else
-                //todo: message
-                throw new EntityNotFoundException();
+                throw new EntityNotFoundException("Reference parent is not found");
         }
         return department;
     }
@@ -168,12 +140,15 @@ public class DepartmentDataService {
         responseDto.setId(department.getId());
         responseDto.setName(department.getName());
         responseDto.setTypeName(department.getType().getName());
-        if (department.getHead() != null){
-            String fullHeadName = department.getHead().getFirstName() + " " + department.getHead().getLastName();
-            if (department.getHead().getPatronymic() != null)
-                fullHeadName += " " +  department.getHead().getPatronymic();
-            responseDto.setHeadName(fullHeadName);
-        }
+        List<String> headsNames = employeeRepository
+                .findAll(Example.of(new Employee(department, true)))
+                .stream().map(employee -> {
+                    String fullHeadName =employee.getFirstName() + " " + employee.getLastName();
+                    if (employee.getPatronymic() != null)
+                        fullHeadName += " " +  employee.getPatronymic();
+                    return fullHeadName;
+                }).collect(Collectors.toList());
+        responseDto.setHeadNames(headsNames);
         if (department.getParent() != null)
             responseDto.setParentName(department.getParent().getName());
         List<EmployeeResponseDto> employees = mapEmployeesToResponseDtos(employeeRepository.findAll(Example.of(new Employee(department))));
@@ -203,8 +178,6 @@ public class DepartmentDataService {
     private Department getUpdateDepartment(Department info, Department updateDepartment){
         if (info.getName() != null)
             updateDepartment.setName(info.getName());
-        if (info.getHead() != null)
-            updateDepartment.setHead(info.getHead());
         if (info.getModerator() != null)
             updateDepartment.setModerator(info.getModerator());
         if (info.getType() != null)

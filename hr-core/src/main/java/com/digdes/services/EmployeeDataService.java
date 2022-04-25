@@ -3,12 +3,9 @@ package com.digdes.services;
 import com.digdes.dto.EmployeeResponseDto;
 import com.digdes.dto.EmployeeDto;
 import com.digdes.exceptions.EntityCreateException;
-import com.digdes.exceptions.EntityDeleteException;
 import com.digdes.exceptions.EntityNotFoundException;
 import com.digdes.exceptions.EntityUpdateException;
-import com.digdes.models.Department;
-import com.digdes.models.Employee;
-import com.digdes.models.Position;
+import com.digdes.models.*;
 import com.digdes.repositories.DepartmentRepository;
 import com.digdes.repositories.EmployeeRepository;
 import com.digdes.repositories.PositionRepository;
@@ -22,7 +19,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class EmployeeDataService {
+public class EmployeeDataService extends DataService{
     @Autowired
     private EmployeeRepository employeeRepository;
     @Autowired
@@ -36,33 +33,27 @@ public class EmployeeDataService {
             Employee employee = mapDtoToEmployee(info);
             Optional<Employee> existingEmployee = employeeRepository.findOne(Example.of(employee));
             if (employeeRepository.findOne(Example.of(new Employee(employee.getEmail()))).isPresent())
-                //todo: message
-                throw new EntityCreateException();
+                throw new EntityCreateException("Unique constraint violation field Email");
             return existingEmployee.map(this::mapEmployeeToResponseDto).orElseGet(() -> mapEmployeeToResponseDto(employeeRepository.save(employee)));
         } catch (EntityNotFoundException e){
-            //todo: message
-            throw new EntityNotFoundException();
+            throw new EntityNotFoundException(e.getMessage());
         }
     }
 
     @Transactional
     public EmployeeResponseDto update(EmployeeDto info) {
-        // todo: get object by id, set up new fields, save into db
         try{
             Employee employee = mapDtoToEmployee(info);
             Optional<Employee> updateEmployee = employeeRepository.findById(employee.getId());
             if (!updateEmployee.isPresent())
-                //todo: message
-                throw new EntityNotFoundException();
+                throw new EntityNotFoundException("Updated employee is not found");
             if (employee.getEmail() != null) {
                 if (employeeRepository.findOne(Example.of(new Employee(employee.getEmail()))).isPresent())
-                    //todo: message
-                    throw new EntityUpdateException();
+                    throw new EntityUpdateException("Unique constraint violation field Email");
             }
             return mapEmployeeToResponseDto(employeeRepository.save(getUpdateEmployee(employee, updateEmployee.get())));
         } catch (EntityNotFoundException e){
-            //todo: message
-            throw new EntityNotFoundException();
+            throw new EntityNotFoundException(e.getMessage());
         }
     }
 
@@ -70,14 +61,10 @@ public class EmployeeDataService {
     public boolean delete(EmployeeDto info) {
         try {
             Employee employee = mapDtoToEmployee(info);
-            if (departmentRepository.findAll(Example.of(new Department(employee))).size() != 0)
-                //todo: message
-                //todo: cascade delete for users
-                throw new EntityDeleteException();
             employeeRepository.delete(employee);
             return !employeeRepository.existsById(employee.getId());
         } catch (EntityNotFoundException e){
-            throw new EntityNotFoundException();
+            throw new EntityNotFoundException(e.getMessage());
         }
     }
 
@@ -92,8 +79,7 @@ public class EmployeeDataService {
             ;
             return employees;
         } catch (EntityNotFoundException e){
-            //todo: message
-            throw new EntityNotFoundException();
+            throw new EntityNotFoundException(e.getMessage());
         }
     }
 
@@ -114,7 +100,6 @@ public class EmployeeDataService {
         return false;
     }
 
-
     private Employee mapDtoToEmployee(EmployeeDto dto){
         Employee employee = new Employee();
         employee.setId(dto.getId());
@@ -124,21 +109,20 @@ public class EmployeeDataService {
         employee.setPatronymic(dto.getPatronymic());
         employee.setGender(dto.getGender());
         employee.setEmail(dto.getEmail());
+        employee.setHead(dto.getHead());
         if (dto.getPositionId() != null) {
             Optional<Position> position = positionRepository.findById(dto.getPositionId());
             if (position.isPresent())
                 employee.setPosition(position.get());
             else
-                //todo: message
-                throw new EntityNotFoundException();
+                throw new EntityNotFoundException("Reference position is not found");
         }
         if (dto.getDepartmentId() != null) {
             Optional<Department> department = departmentRepository.findById(dto.getDepartmentId());
             if (department.isPresent())
                 employee.setDepartment(department.get());
             else
-                //todo: message
-                throw new EntityNotFoundException();
+                throw new EntityNotFoundException("Reference department is not found");
         }
         return employee;
     }
@@ -172,6 +156,8 @@ public class EmployeeDataService {
             updateEmployee.setGender(info.getGender());
         if (info.getEmail() != null)
             updateEmployee.setEmail(info.getEmail());
+        if (info.getHead() != null)
+            updateEmployee.setHead(info.getHead());
         if (info.getDepartment() != null)
             updateEmployee.setDepartment(info.getDepartment());
         if (info.getPosition() != null)

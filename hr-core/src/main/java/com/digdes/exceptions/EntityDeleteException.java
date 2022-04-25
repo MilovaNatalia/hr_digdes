@@ -1,5 +1,7 @@
 package com.digdes.exceptions;
 
 public class EntityDeleteException extends RuntimeException{
-    //todo: message
+    public EntityDeleteException(String message) {
+        super(message);
+    }
 }

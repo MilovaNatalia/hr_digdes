@@ -9,9 +9,13 @@ public class DepartmentResponseDto {
     private Long id;
     private String name;
     private String typeName;
-    private String headName;
+    private List<String> headNames;
     private String parentName;
     private List<EmployeeResponseDto> employees;
+
+    public DepartmentResponseDto() {
+    }
+
     public Long getId() {
         return id;
     }
@@ -36,12 +40,12 @@ public class DepartmentResponseDto {
         this.typeName = typeName;
     }
 
-    public String getHeadName() {
-        return headName;
+    public List<String> getHeadNames() {
+        return headNames;
     }
 
-    public void setHeadName(String headName) {
-        this.headName = headName;
+    public void setHeadNames(List<String> headNames) {
+        this.headNames = headNames;
     }
 
     public String getParentName() {
@@ -65,11 +69,11 @@ public class DepartmentResponseDto {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DepartmentResponseDto that = (DepartmentResponseDto) o;
-        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(typeName, that.typeName) && Objects.equals(headName, that.headName) && Objects.equals(parentName, that.parentName) && Objects.equals(employees, that.employees);
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(typeName, that.typeName) && Objects.equals(headNames, that.headNames) && Objects.equals(parentName, that.parentName) && Objects.equals(employees, that.employees);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, typeName, headName, parentName, employees);
+        return Objects.hash(id, name, typeName, headNames, parentName, employees);
     }
 }

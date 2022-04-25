@@ -36,12 +36,20 @@ public class Employee {
     @JoinColumn(name = "department_id")
     private Department department;
 
-
     @ManyToOne
     @JoinColumn(name="position_id", nullable = false)
     private Position position;
 
+    @Column(name = "is_head", nullable = false)
+    private Boolean isHead;
+
+
     public Employee() {
+    }
+
+    public Employee(Department department, Boolean isHead) {
+        this.department = department;
+        this.isHead = isHead;
     }
 
     public Employee(Position position) {
@@ -128,16 +136,24 @@ public class Employee {
         this.position = position;
     }
 
+    public Boolean getHead() {
+        return isHead;
+    }
+
+    public void setHead(Boolean head) {
+        isHead = head;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Employee employee = (Employee) o;
-        return Objects.equals(id, employee.id) && Objects.equals(firstName, employee.firstName) && Objects.equals(lastName, employee.lastName) && Objects.equals(patronymic, employee.patronymic) && Objects.equals(email, employee.email) && gender == employee.gender && Objects.equals(birthDate, employee.birthDate) && Objects.equals(department, employee.department) && Objects.equals(position, employee.position);
+        return Objects.equals(id, employee.id) && Objects.equals(firstName, employee.firstName) && Objects.equals(lastName, employee.lastName) && Objects.equals(patronymic, employee.patronymic) && Objects.equals(email, employee.email) && gender == employee.gender && Objects.equals(birthDate, employee.birthDate) && Objects.equals(department, employee.department) && Objects.equals(position, employee.position) && Objects.equals(isHead, employee.isHead);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstName, lastName, patronymic, email, gender, birthDate, department, position);
+        return Objects.hash(id, firstName, lastName, patronymic, email, gender, birthDate, department, position, isHead);
     }
 }

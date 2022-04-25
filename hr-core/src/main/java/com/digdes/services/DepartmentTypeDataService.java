@@ -36,8 +36,7 @@ public class DepartmentTypeDataService{
     public DepartmentTypeDto update (DepartmentTypeDto info) {
         DepartmentType type = mapDtoToDepartmentType(info);
         if (typeRepository.findOne(Example.of(new DepartmentType(type.getName()))).isPresent())
-            //todo: message
-            throw new EntityUpdateException();
+            throw new EntityUpdateException("Updated department type is not found");
         return mapDepartmentTypeToDto(typeRepository.save(type));
     }
 
@@ -45,8 +44,7 @@ public class DepartmentTypeDataService{
     public boolean delete(DepartmentTypeDto info) {
         DepartmentType type = typeRepository.getById(info.getId());
         if (departmentRepository.findAll(Example.of(new Department(type))).size() != 0)
-        //todo: message
-            throw new EntityDeleteException();
+            throw new EntityDeleteException("Reference on this department type in table department (type_id)");
         typeRepository.delete(type);
         return !typeRepository.existsById(type.getId());
     }

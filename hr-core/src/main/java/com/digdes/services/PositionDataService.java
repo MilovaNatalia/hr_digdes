@@ -36,8 +36,7 @@ public class PositionDataService{
     public PositionDto update (PositionDto info) {
         Position position = mapDtoToPosition(info);
         if (positionRepository.findOne(Example.of(new Position(position.getName()))).isPresent())
-            //todo: message
-            throw new EntityUpdateException();
+            throw new EntityUpdateException("Updated position is not found");
         return mapPositionToDto(positionRepository.save(position));
     }
 
@@ -45,8 +44,7 @@ public class PositionDataService{
     public boolean delete(PositionDto info) {
         Position position = positionRepository.getById(info.getId());
         if (employeeRepository.findAll(Example.of(new Employee(position))).size() != 0)
-            //todo: message
-            throw new EntityDeleteException();
+            throw new EntityDeleteException("Reference on this position in table employees (position_id)");
         positionRepository.delete(position);
         return !positionRepository.existsById(position.getId());
     }
