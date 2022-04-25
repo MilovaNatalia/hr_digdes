@@ -20,6 +20,29 @@
             </column>
         </createTable>
     </changeSet>
+    <changeSet author="natalia" id="create_table_users">
+        <createTable tableName="users">
+            <column name="username" type="varchar(250)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="password" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="natalia" id="create_table_roles">
+        <createTable tableName="roles">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
     <changeSet author="natalia" id="create_table_employees">
         <createTable tableName="employees">
             <column name="id" type="bigint" autoIncrement="true">
@@ -50,6 +73,7 @@
             <column name="is_head" type="boolean">
                 <constraints nullable="false"/>
             </column>
+            <column name="user_id" type="varchar(250)"/>
         </createTable>
     </changeSet>
     <changeSet author="natalia" id="create_table_departments">
@@ -68,29 +92,7 @@
             <column name="path" type="ltree"/>
         </createTable>
     </changeSet>
-    <changeSet author="natalia" id="create_table_users">
-        <createTable tableName="users">
-            <column name="username" type="varchar(250)">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="password" type="varchar(250)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="role_id" type="bigint">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-    </changeSet>
-    <changeSet author="natalia" id="create_table_roles">
-        <createTable tableName="roles">
-            <column name="id" type="bigint" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="name" type="varchar(250)">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-    </changeSet>
+
     <changeSet author="natalia" id="addForeignKeyConstraints">
         <addForeignKeyConstraint baseColumnNames="department_id"
                                  baseTableName="employees"
@@ -102,6 +104,11 @@
                                  constraintName="fk_employee_position"
                                  referencedColumnNames="id"
                                  referencedTableName="positions"/>
+        <addForeignKeyConstraint baseColumnNames="user_id"
+                                 baseTableName="employees"
+                                 constraintName="fk_employee_user"
+                                 referencedColumnNames="username"
+                                 referencedTableName="users"/>
         <addForeignKeyConstraint baseColumnNames="type_id"
                                  baseTableName="departments"
                                  constraintName="fk_department_type"
@@ -124,6 +131,7 @@
                                  constraintName="fk_department_department"
                                  referencedColumnNames="id"
                                  referencedTableName="departments"/>
+
     </changeSet>
     <changeSet author="natalia" id="addProcedureUpdatePath">
         <createProcedure>
