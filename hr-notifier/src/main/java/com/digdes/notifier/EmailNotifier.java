@@ -1,6 +1,8 @@
 package com.digdes.notifier;
 
 import com.digdes.message.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.SimpleMailMessage;
@@ -19,6 +21,8 @@ public class EmailNotifier implements Notifier{
 
     private final JavaMailSenderImpl javaMailSender = new JavaMailSenderImpl();
 
+    private static final Logger logger = LoggerFactory.getLogger(EmailNotifier.class);
+
     public EmailNotifier() {
         configureMailSender(javaMailSender);
     }
@@ -27,11 +31,10 @@ public class EmailNotifier implements Notifier{
     public boolean sendMessage(Message message) {
         try {
             javaMailSender.send(convertMessage(message));
-            //log
-            //todo exception
+            logger.info(String.format("Send message %s", message));
             return true;
         } catch (MailException e) {
-            //log
+            logger.error(e.getMessage());
         }
         return false;
     }
@@ -61,6 +64,7 @@ public class EmailNotifier implements Notifier{
             }
             configureMailSender(javaMailSender);
         } catch (IOException e) {
+            logger.error(e.getMessage());
             return false;
         }
         return true;
@@ -80,7 +84,6 @@ public class EmailNotifier implements Notifier{
             props.put("mail.debug", true);
         } catch (IOException e) {
             throw new RuntimeException(e);
-            //todo: log this
         }
 
     }

@@ -77,4 +77,16 @@ public class EmailMessage implements Message {
         result = 31 * result + Arrays.hashCode(to);
         return result;
     }
+
+    //todo: pretty to string
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("EmailMessage{");
+        sb.append("from='").append(from).append('\'');
+        sb.append(", to=").append(to == null ? "null" : Arrays.asList(to).toString());
+        sb.append(", subject='").append(subject).append('\'');
+        sb.append(", body='").append(body).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

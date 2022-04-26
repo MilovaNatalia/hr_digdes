@@ -11,6 +11,8 @@ import com.digdes.message.Message;
 import com.digdes.message.impl.EmailMessage;
 import com.digdes.notifier.EmailNotifier;
 import com.digdes.notifier.Notifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,8 @@ public class PositionDataService extends DataService<PositionDto, PositionDto>{
     @Autowired
     private Notifier notifier;
 
+    private static final Logger logger = LoggerFactory.getLogger(EmailNotifier.class);
+
     @Transactional
     @Override
     public PositionDto create (PositionDto info) {
@@ -43,10 +47,9 @@ public class PositionDataService extends DataService<PositionDto, PositionDto>{
     @Transactional
     @Override
     public PositionDto update (PositionDto info) {
-        //todo: notifier
         Position position = mapDtoToPosition(info);
         if (positionRepository.findOne(Example.of(new Position(position.getName()))).isPresent())
-            throw new EntityUpdateException("Updated position is not found");
+            throw new EntityUpdateException("This name of position already exists");
         PositionDto result = mapPositionToDto(positionRepository.save(position));
         notifier.sendMessage(getUpdateMessage(position));
         return result;
@@ -55,11 +58,14 @@ public class PositionDataService extends DataService<PositionDto, PositionDto>{
     @Transactional
     @Override
     public boolean delete(PositionDto info) {
-        Position position = positionRepository.getById(info.getId());
-        if (employeeRepository.findAll(Example.of(new Employee(position))).size() != 0)
-            throw new EntityDeleteException("Reference on this position in table employees (position_id)");
-        positionRepository.delete(position);
-        return !positionRepository.existsById(position.getId());
+        Optional<Position> position = positionRepository.findById(info.getId());
+        if (position.isPresent()) {
+            if (employeeRepository.findAll(Example.of(new Employee(position.get()))).size() != 0)
+                throw new EntityDeleteException("Reference on this position in table employees (position_id)");
+            positionRepository.delete(position.get());
+            return !positionRepository.existsById(position.get().getId());
+        }
+        return true;
     }
 
     @Transactional

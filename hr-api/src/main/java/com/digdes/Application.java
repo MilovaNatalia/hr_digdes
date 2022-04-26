@@ -7,8 +7,6 @@ import org.springframework.context.annotation.Import;
 @Import({HibernateConfig.class})
 @SpringBootApplication
 public class Application {
-
-    //todo: application properties
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }

@@ -38,7 +38,6 @@ public class EmployeeDataService extends DataService<EmployeeDto, EmployeeRespon
     @Autowired
     private Notifier notifier;
 
-    //todo: double sending
     @Transactional
     @Override
     public EmployeeResponseDto create(EmployeeDto info) {
@@ -205,7 +204,6 @@ public class EmployeeDataService extends DataService<EmployeeDto, EmployeeRespon
         return updateEmployee;
     }
 
-    //todo: create employee - notifier, employee + heads of department
     private Message getCreateMessage(Employee employee){
         List<String> receivers = getReceivers(employee.getDepartment(), true);
         receivers.add(employee.getEmail());
@@ -217,26 +215,21 @@ public class EmployeeDataService extends DataService<EmployeeDto, EmployeeRespon
         return message;
     }
 
-    //todo: update employee
 
     private List<Message> getUpdateMessages(Employee updateInfo, Employee oldEmployee, Employee newEmployee){
         List<Message> messages = new ArrayList<>();
-        // 3) todo: new head --- all employees of department
         if (updateInfo.getHead() != null){
             String[] receivers = getReceivers(newEmployee.getDepartment(), null).toArray(String[]::new);
             messages.add(getUpdateHeadMessage(receivers, newEmployee));
         }
-        // 2) todo: new birthdate, gender, email, user --- employee
         if (updateInfo.getBirthDate() != null || updateInfo.getGender() != null
             || updateInfo.getEmail() != null || updateInfo.getUser() != null
                 || updateInfo.getPatronymic() != null)
             messages.add(getUpdatePersonalDataMessage(new String[]{oldEmployee.getEmail()}, newEmployee));
         if ((updateInfo.getUser() == null && oldEmployee.getUser() != null)
                 || (updateInfo.getPatronymic() == null && oldEmployee.getPatronymic() != null)){
-
             messages.add(getUpdatePersonalDataMessage(new String[]{oldEmployee.getEmail()},newEmployee));
         }
-        // 4) todo: new department ---- employee, old heads, new heads
         if (updateInfo.getDepartment() != null){
             List<String> receivers = new ArrayList<>();
             receivers.add(oldEmployee.getEmail());
@@ -244,7 +237,6 @@ public class EmployeeDataService extends DataService<EmployeeDto, EmployeeRespon
             receivers.addAll(getReceivers(newEmployee.getDepartment(), true));
             messages.add(getUpdateDepartmentMessage(receivers.toArray(String[]::new), newEmployee));
         }
-        // 1) todo: new name, position --- employee + heads
         if (updateInfo.getFirstName() != null || updateInfo.getLastName() != null
             || updateInfo.getPosition() != null) {
             List<String> receivers = new ArrayList<>();
@@ -284,7 +276,6 @@ public class EmployeeDataService extends DataService<EmployeeDto, EmployeeRespon
         return message;
     }
 
-    // todo: delete employee --- employee, heads of department
     private Message getDeleteMessage(Employee oldEmployee){
         List<String> receivers = getReceivers(oldEmployee.getDepartment(), true);
         receivers.add(oldEmployee.getEmail());

@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 @Service
 public class DepartmentDataService extends DataService<DepartmentDto, DepartmentResponseDto>{
 
-    //todo: transactonal
     @Autowired
     private DepartmentRepository departmentRepository;
     @Autowired
@@ -211,7 +210,6 @@ public class DepartmentDataService extends DataService<DepartmentDto, Department
         return updateDepartment;
     }
 
-    //todo: create department --- heads of parent if not null
     private Message getCreateMessage(Department department){
         String[] receivers = getReceivers(department, true).toArray(String[]::new);
         Message message = new EmailMessage();
@@ -222,17 +220,13 @@ public class DepartmentDataService extends DataService<DepartmentDto, Department
         return message;
     }
 
-    //todo: update department --
     private List<Message> getUpdateMessages(Department updateInfo, Department updateDepartment, Department newDepartment) {
-        //todo: check empty moders
         List<Message> messages = new ArrayList<>();
-        // todo: name, type, parent, emplyees --- all employees
         if (updateInfo.getName() != null || updateInfo.getType() != null
                 || updateInfo.getParent() != null) {
             String[] receivers = getReceivers(updateInfo, null).toArray(String[]::new);
             messages.add(getAllEmployeesMessage(receivers, newDepartment));
         }
-        // todo: moderator --- old moderator, new if not null
         if (updateInfo.getModerator() != null)
             messages.add(getUpdateModeratorMessage(updateInfo, newDepartment, newDepartment));
         else if (updateDepartment.getModerator() != null)
@@ -273,7 +267,6 @@ public class DepartmentDataService extends DataService<DepartmentDto, Department
         return message;
     }
 
-    //todo: delete department --- heads of parent if not null
     private Message getDeleteMessage(Department oldDepartment){
         String[] receivers = getReceivers(oldDepartment, true).toArray(String[]::new);
         Message message = new EmailMessage();

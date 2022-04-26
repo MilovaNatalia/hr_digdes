@@ -13,7 +13,6 @@ public class NotifierSettingsDataService {
     @Autowired
     private Notifier notifier;
 
-    //todo: map to settings
     @Transactional
     public boolean update(SettingsDto info) {
         SmtpSettings settings = mapDtoToSettings(info);

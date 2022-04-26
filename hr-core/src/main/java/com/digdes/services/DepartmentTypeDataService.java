@@ -50,7 +50,7 @@ public class DepartmentTypeDataService extends DataService<DepartmentTypeDto, De
     public DepartmentTypeDto update (DepartmentTypeDto info) {
         DepartmentType type = mapDtoToDepartmentType(info);
         if (typeRepository.findOne(Example.of(new DepartmentType(type.getName()))).isPresent())
-            throw new EntityUpdateException("Updated department type is not found");
+            throw new EntityUpdateException("This name of department type already exists");
         DepartmentTypeDto departmentTypeDto = mapDepartmentTypeToDto(typeRepository.save(type));
         notifier.sendMessage(getUpdateMessage(type));
         return departmentTypeDto;
@@ -59,11 +59,14 @@ public class DepartmentTypeDataService extends DataService<DepartmentTypeDto, De
     @Transactional
     @Override
     public boolean delete(DepartmentTypeDto info) {
-        DepartmentType type = typeRepository.getById(info.getId());
-        if (departmentRepository.findAll(Example.of(new Department(type))).size() != 0)
-            throw new EntityDeleteException("Reference on this department type in table department (type_id)");
-        typeRepository.delete(type);
-        return !typeRepository.existsById(type.getId());
+        Optional<DepartmentType> type = typeRepository.findById(info.getId());
+        if (type.isPresent()) {
+            if (departmentRepository.findAll(Example.of(new Department(type.get()))).size() != 0)
+                throw new EntityDeleteException("Reference on this department type in table department (type_id)");
+            typeRepository.delete(type.get());
+            return !typeRepository.existsById(type.get().getId());
+        }
+        return false;
     }
 
     @Transactional
