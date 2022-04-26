@@ -2,6 +2,7 @@ package com.digdes.services;
 
 import com.digdes.dto.SettingsDto;
 import com.digdes.notifier.Notifier;
+import com.digdes.notifier.SmtpSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +16,12 @@ public class NotifierSettingsDataService {
     //todo: map to settings
     @Transactional
     public boolean update(SettingsDto info) {
-        //todo: map to settings
-        //todo: notifier.setUpSettings
-        return false;
+        SmtpSettings settings = mapDtoToSettings(info);
+        return notifier.setUpSettings(settings);
+    }
+
+    private SmtpSettings mapDtoToSettings (SettingsDto dto){
+        return new SmtpSettings(dto.getHost(),
+                dto.getPort(), dto.getUsername(), dto.getPassword());
     }
 }

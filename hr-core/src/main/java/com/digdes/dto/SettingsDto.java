@@ -3,51 +3,51 @@ package com.digdes.dto;
 import java.util.Objects;
 
 public class SettingsDto {
-    private String smtp_server;
-    private String smtp_port;
-    private String smtp_auth_user;
-    private String smtp_auth_pwd;
+    private String host;
+    private Integer port;
+    private String username;
+    private String password;
 
     public SettingsDto() {
     }
 
-    public SettingsDto(String smtp_server, String smtp_port, String smtp_auth_user, String smtp_auth_pwd) {
-        this.smtp_server = smtp_server;
-        this.smtp_port = smtp_port;
-        this.smtp_auth_user = smtp_auth_user;
-        this.smtp_auth_pwd = smtp_auth_pwd;
+    public SettingsDto(String host, Integer port, String username, String password) {
+        this.host = host;
+        this.port = port;
+        this.username = username;
+        this.password = password;
     }
 
-    public String getSmtp_server() {
-        return smtp_server;
+    public String getHost() {
+        return host;
     }
 
-    public void setSmtp_server(String smtp_server) {
-        this.smtp_server = smtp_server;
+    public void setHost(String host) {
+        this.host = host;
     }
 
-    public String getSmtp_port() {
-        return smtp_port;
+    public Integer getPort() {
+        return port;
     }
 
-    public void setSmtp_port(String smtp_port) {
-        this.smtp_port = smtp_port;
+    public void setPort(Integer port) {
+        this.port = port;
     }
 
-    public String getSmtp_auth_user() {
-        return smtp_auth_user;
+    public String getUsername() {
+        return username;
     }
 
-    public void setSmtp_auth_user(String smtp_auth_user) {
-        this.smtp_auth_user = smtp_auth_user;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getSmtp_auth_pwd() {
-        return smtp_auth_pwd;
+    public String getPassword() {
+        return password;
     }
 
-    public void setSmtp_auth_pwd(String smtp_auth_pwd) {
-        this.smtp_auth_pwd = smtp_auth_pwd;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     @Override
@@ -55,11 +55,11 @@ public class SettingsDto {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SettingsDto that = (SettingsDto) o;
-        return Objects.equals(smtp_server, that.smtp_server) && Objects.equals(smtp_port, that.smtp_port) && Objects.equals(smtp_auth_user, that.smtp_auth_user) && Objects.equals(smtp_auth_pwd, that.smtp_auth_pwd);
+        return Objects.equals(host, that.host) && Objects.equals(port, that.port) && Objects.equals(username, that.username) && Objects.equals(password, that.password);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(smtp_server, smtp_port, smtp_auth_user, smtp_auth_pwd);
+        return Objects.hash(host, port, username, password);
     }
 }

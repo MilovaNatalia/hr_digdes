@@ -1,40 +1,65 @@
 package com.digdes.notifier;
 
+import java.util.Objects;
+
 public class SmtpSettings implements Settings{
-    private String smtp_server;
-    private String smtp_port;
-    private String smtp_auth_user;
-    private String smtp_auth_pwd;
+    private String host;
+    private Integer port;
+    private String username;
+    private String password;
 
-    public String getSmtp_server() {
-        return smtp_server;
+    public SmtpSettings() {
     }
 
-    public void setSmtp_server(String smtp_server) {
-        this.smtp_server = smtp_server;
+    public SmtpSettings(String host, Integer port, String username, String password) {
+        this.host = host;
+        this.port = port;
+        this.username = username;
+        this.password = password;
     }
 
-    public String getSmtp_port() {
-        return smtp_port;
+    public String getHost() {
+        return host;
     }
 
-    public void setSmtp_port(String smtp_port) {
-        this.smtp_port = smtp_port;
+    public void setHost(String host) {
+        this.host = host;
     }
 
-    public String getSmtp_auth_user() {
-        return smtp_auth_user;
+    public Integer getPort() {
+        return port;
     }
 
-    public void setSmtp_auth_user(String smtp_auth_user) {
-        this.smtp_auth_user = smtp_auth_user;
+    public void setPort(Integer port) {
+        this.port = port;
     }
 
-    public String getSmtp_auth_pwd() {
-        return smtp_auth_pwd;
+    public String getUsername() {
+        return username;
     }
 
-    public void setSmtp_auth_pwd(String smtp_auth_pwd) {
-        this.smtp_auth_pwd = smtp_auth_pwd;
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SmtpSettings that = (SmtpSettings) o;
+        return Objects.equals(host, that.host) && Objects.equals(port, that.port) && Objects.equals(username, that.username) && Objects.equals(password, that.password);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(host, port, username, password);
     }
 }
