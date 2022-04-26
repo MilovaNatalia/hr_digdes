@@ -3,6 +3,7 @@ package com.digdes.controllers;
 
 import com.digdes.dto.DepartmentDto;
 import com.digdes.dto.DepartmentResponseDto;
+import com.digdes.dto.EmployeeResponseDto;
 import com.digdes.exceptions.EntityCreateException;
 import com.digdes.exceptions.EntityDeleteException;
 import com.digdes.exceptions.EntityNotFoundException;
@@ -15,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @RestController
@@ -92,8 +94,8 @@ public class DepartmentApiController {
 
     @GetMapping(path = "/get/{id}")
     public ResponseEntity<?> get(@PathVariable Long id) {
-        DepartmentResponseDto department = dataService.get(id);
-        return ResponseEntity.ok(department);
+        Optional<DepartmentResponseDto> department = dataService.get(id);
+        return ResponseEntity.ok(department.orElseGet(DepartmentResponseDto::new));
     }
 
     @GetMapping(path = "/all")

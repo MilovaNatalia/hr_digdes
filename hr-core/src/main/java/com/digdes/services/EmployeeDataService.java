@@ -5,7 +5,11 @@ import com.digdes.dto.EmployeeDto;
 import com.digdes.exceptions.EntityCreateException;
 import com.digdes.exceptions.EntityNotFoundException;
 import com.digdes.exceptions.EntityUpdateException;
+import com.digdes.message.Message;
+import com.digdes.message.impl.EmailMessage;
 import com.digdes.models.*;
+import com.digdes.notifier.EmailNotifier;
+import com.digdes.notifier.Notifier;
 import com.digdes.repositories.DepartmentRepository;
 import com.digdes.repositories.EmployeeRepository;
 import com.digdes.repositories.PositionRepository;
@@ -15,12 +19,13 @@ import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class EmployeeDataService extends DataService{
+public class EmployeeDataService extends DataService<EmployeeDto, EmployeeResponseDto>{
     @Autowired
     private EmployeeRepository employeeRepository;
     @Autowired
@@ -30,48 +35,68 @@ public class EmployeeDataService extends DataService{
     @Autowired
     private UsersRepository usersRepository;
 
+    @Autowired
+    private Notifier notifier;
+
     @Transactional
+    @Override
     public EmployeeResponseDto create(EmployeeDto info) {
         try {
             Employee employee = mapDtoToEmployee(info);
             Optional<Employee> existingEmployee = employeeRepository.findOne(Example.of(employee));
             if (employeeRepository.findOne(Example.of(new Employee(employee.getEmail()))).isPresent())
                 throw new EntityCreateException("Unique constraint violation field Email");
-            return existingEmployee.map(this::mapEmployeeToResponseDto).orElseGet(() -> mapEmployeeToResponseDto(employeeRepository.save(employee)));
+            Employee newEmployee = existingEmployee.orElseGet(() -> employeeRepository.save(employee));
+            notifier.sendMessage(getCreateMessage(newEmployee));
+            return mapEmployeeToResponseDto(newEmployee);
         } catch (EntityNotFoundException e){
             throw new EntityNotFoundException(e.getMessage());
         }
     }
 
     @Transactional
+    @Override
     public EmployeeResponseDto update(EmployeeDto info) {
         try{
             Employee employee = mapDtoToEmployee(info);
-            Optional<Employee> updateEmployee = employeeRepository.findById(employee.getId());
-            if (!updateEmployee.isPresent())
+            Optional<Employee> existingEmployee = employeeRepository.findById(employee.getId());
+            if (existingEmployee.isEmpty())
                 throw new EntityNotFoundException("Updated employee is not found");
+            Employee updateEmployee = existingEmployee.get();
             if (employee.getEmail() != null) {
                 if (employeeRepository.findOne(Example.of(new Employee(employee.getEmail()))).isPresent())
                     throw new EntityUpdateException("Unique constraint violation field Email");
             }
-            return mapEmployeeToResponseDto(employeeRepository.save(getUpdateEmployee(employee, updateEmployee.get())));
+            Employee newEmployee = employeeRepository.save(getUpdateEmployee(employee, updateEmployee));
+            for (Message message: getUpdateMessages(employee, updateEmployee, newEmployee)) {
+                notifier.sendMessage(message);
+            }
+            return mapEmployeeToResponseDto(newEmployee);
         } catch (EntityNotFoundException e){
             throw new EntityNotFoundException(e.getMessage());
         }
     }
 
     @Transactional
+    @Override
     public boolean delete(EmployeeDto info) {
         try {
             Employee employee = mapDtoToEmployee(info);
-            employeeRepository.delete(employee);
-            return !employeeRepository.existsById(employee.getId());
+            Optional<Employee> oldEmployee = employeeRepository.findById(employee.getId());
+            if (oldEmployee.isPresent()) {
+                employeeRepository.delete(employee);
+                boolean result = !employeeRepository.existsById(employee.getId());
+                notifier.sendMessage(getDeleteMessage(oldEmployee.get()));
+                return result;
+            }
         } catch (EntityNotFoundException e){
             throw new EntityNotFoundException(e.getMessage());
         }
+        return true;
     }
 
     @Transactional
+    @Override
     public List<EmployeeResponseDto> find(EmployeeDto searchRequest) {
         try {
             List<EmployeeResponseDto> employees =
@@ -87,12 +112,14 @@ public class EmployeeDataService extends DataService{
     }
 
     @Transactional
+    @Override
     public Optional<EmployeeResponseDto> get(Long id) {
         Optional<Employee> employee = employeeRepository.findById(id);
         return employee.map(this::mapEmployeeToResponseDto);
     }
 
     @Transactional
+    @Override
     public List<EmployeeResponseDto> getAll() {
         return employeeRepository.findAll()
                 .stream().map(this::mapEmployeeToResponseDto)
@@ -175,5 +202,96 @@ public class EmployeeDataService extends DataService{
         if (info.getPosition() != null)
             updateEmployee.setPosition(info.getPosition());
         return updateEmployee;
+    }
+
+    //todo: create employee - notifier, employee + heads of department
+    private Message getCreateMessage(Employee employee){
+        List<String> receivers = getReceivers(employee.getDepartment(), true);
+        receivers.add(employee.getEmail());
+        Message message = new EmailMessage();
+        message.setFrom(EmailNotifier.FROM_EMAIL);
+        message.setTo(receivers.toArray(String[]::new));
+        message.setSubject("Employee created");
+        message.setBody(String.format("Hello!\n Employee \"%s %s\" created in \"%s\".", employee.getFirstName(), employee.getLastName(), employee.getDepartment().getName()));
+        return message;
+    }
+
+    //todo: update employee
+
+    private List<Message> getUpdateMessages(Employee updateInfo, Employee oldEmployee, Employee newEmployee){
+        List<Message> messages = new ArrayList<>();
+        // 3) todo: new head --- all employees of department
+        if (updateInfo.getHead() != null){
+            String[] receivers = getReceivers(newEmployee.getDepartment(), null).toArray(String[]::new);
+            messages.add(getUpdateHeadMessage(receivers, newEmployee));
+        }
+        // 2) todo: new birthdate, gender, email, user --- employee
+        if (updateInfo.getBirthDate() != null || updateInfo.getGender() != null
+            || updateInfo.getEmail() != null || updateInfo.getUser() != null
+                || updateInfo.getPatronymic() != null)
+            messages.add(getUpdatePersonalDataMessage(new String[]{oldEmployee.getEmail()}, newEmployee));
+        if ((updateInfo.getUser() == null && oldEmployee.getUser() != null)
+                || (updateInfo.getPatronymic() == null && oldEmployee.getPatronymic() != null)){
+
+            messages.add(getUpdatePersonalDataMessage(new String[]{oldEmployee.getEmail()},newEmployee));
+        }
+        // 4) todo: new department ---- employee, old heads, new heads
+        if (updateInfo.getDepartment() != null){
+            List<String> receivers = new ArrayList<>();
+            receivers.add(oldEmployee.getEmail());
+            receivers.addAll(getReceivers(oldEmployee.getDepartment(), true));
+            receivers.addAll(getReceivers(newEmployee.getDepartment(), true));
+            messages.add(getUpdateDepartmentMessage(receivers.toArray(String[]::new), newEmployee));
+        }
+        // 1) todo: new name, position --- employee + heads
+        if (updateInfo.getFirstName() != null || updateInfo.getLastName() != null
+            || updateInfo.getPosition() != null) {
+            List<String> receivers = new ArrayList<>();
+            receivers.add(oldEmployee.getEmail());
+            receivers.addAll(getReceivers(oldEmployee.getDepartment(), null));
+            messages.add(getUpdatePersonalDataMessage(receivers.toArray(String[]::new), newEmployee));
+        }
+        return messages;
+    }
+
+    private Message getUpdateDepartmentMessage(String[] receivers, Employee newEmployee){
+        Message message = new EmailMessage();
+        message.setFrom(EmailNotifier.FROM_EMAIL);
+        message.setTo(receivers);
+        message.setSubject("Transfer of employee");
+        message.setBody(String.format("Hello!\n Employee %s %s transfer to \"%s\".", newEmployee.getFirstName(),
+                newEmployee.getLastName(), newEmployee.getDepartment().getName()));
+        return message;
+    }
+    
+    private Message getUpdateHeadMessage(String[] receivers, Employee newEmployee){
+        Message message = new EmailMessage();
+        message.setFrom(EmailNotifier.FROM_EMAIL);
+        message.setTo(receivers);
+        message.setSubject("Add head of department");
+        message.setBody(String.format("Hello!\n New head of your department is %s %s.",
+                newEmployee.getFirstName(), newEmployee.getLastName()));
+        return message;
+    }
+    
+    private Message getUpdatePersonalDataMessage(String[] receivers, Employee newEmployee){
+        Message message = new EmailMessage();
+        message.setFrom(EmailNotifier.FROM_EMAIL);
+        message.setTo(receivers);
+        message.setSubject("Change employee data");
+        message.setBody(String.format("Hello!\n New data of employee is %s.", newEmployee.toString()));
+        return message;
+    }
+
+    // todo: delete employee --- employee, heads of department
+    private Message getDeleteMessage(Employee oldEmployee){
+        List<String> receivers = getReceivers(oldEmployee.getDepartment(), true);
+        receivers.add(oldEmployee.getEmail());
+        Message message = new EmailMessage();
+        message.setFrom(EmailNotifier.FROM_EMAIL);
+        message.setTo(receivers.toArray(String[]::new));
+        message.setSubject("Employee deleted");
+        message.setBody(String.format("Hello!\n Employee \"%s %s\" deleted from \"%s\".", oldEmployee.getFirstName(), oldEmployee.getLastName(), oldEmployee.getDepartment().getName()));
+        return message;
     }
 }

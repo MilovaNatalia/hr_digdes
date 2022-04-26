@@ -1,12 +1,10 @@
-package notifier;
+package com.digdes.notifier;
 
 public class SmtpSettings implements Settings{
     private String smtp_server;
     private String smtp_port;
     private String smtp_auth_user;
     private String smtp_auth_pwd;
-    //TODO add field for JavaMail smtp server
-
 
     public String getSmtp_server() {
         return smtp_server;

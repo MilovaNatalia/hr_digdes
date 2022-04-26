@@ -97,11 +97,24 @@ public class Department {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Department that = (Department) o;
-        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(employees, that.employees) && Objects.equals(type, that.type) && Objects.equals(moderator, that.moderator) && Objects.equals(parent, that.parent);
+        return Objects.equals(id, that.id) && name.equals(that.name) && Objects.equals(employees, that.employees) && type.equals(that.type) && Objects.equals(moderator, that.moderator) && parent.equals(that.parent);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, name, employees, type, moderator, parent);
+    }
+
+    //pretty to string
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("Department{");
+        sb.append("id =").append(id);
+        sb.append(", name ='").append(name).append('\'');
+        sb.append(", type =").append(type);
+        sb.append(", moderator =").append(moderator);
+        sb.append(", parent =").append(parent);
+        sb.append('}');
+        return sb.toString();
     }
 }

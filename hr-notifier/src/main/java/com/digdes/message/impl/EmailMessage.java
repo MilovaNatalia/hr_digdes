@@ -1,6 +1,6 @@
-package message.impl;
+package com.digdes.message.impl;
 
-import message.Message;
+import com.digdes.message.Message;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -13,6 +13,9 @@ public class EmailMessage implements Message {
     private String subject;
 
     private String body;
+
+    public EmailMessage() {
+    }
 
     public EmailMessage(String from, String[] to, String subject, String body) {
         this.from = from;

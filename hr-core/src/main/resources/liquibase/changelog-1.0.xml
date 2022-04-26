@@ -62,7 +62,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="email" type="varchar(250)">
-                <constraints unique="true" nullable="false"/>
+                <constraints nullable="false"/>
             </column>
             <column name="department_id" type="bigint">
                 <constraints nullable="false"/>

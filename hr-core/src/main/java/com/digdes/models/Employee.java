@@ -7,7 +7,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "employees")
-public class Employee {
+public class Employee{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -160,11 +160,30 @@ public class Employee {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Employee employee = (Employee) o;
-        return Objects.equals(id, employee.id) && Objects.equals(firstName, employee.firstName) && Objects.equals(lastName, employee.lastName) && Objects.equals(patronymic, employee.patronymic) && Objects.equals(email, employee.email) && gender == employee.gender && Objects.equals(birthDate, employee.birthDate) && Objects.equals(department, employee.department) && Objects.equals(position, employee.position) && Objects.equals(isHead, employee.isHead) && Objects.equals(user, employee.user);
+        return Objects.equals(id, employee.id) && firstName.equals(employee.firstName) && lastName.equals(employee.lastName) && Objects.equals(patronymic, employee.patronymic) && email.equals(employee.email) && gender == employee.gender && birthDate.equals(employee.birthDate) && department.equals(employee.department) && position.equals(employee.position) && isHead.equals(employee.isHead) && Objects.equals(user, employee.user);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, firstName, lastName, patronymic, email, gender, birthDate, department, position, isHead, user);
+    }
+
+    //pretty to string
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("Employee{");
+        sb.append("id=").append(id);
+        sb.append(", firstName='").append(firstName).append('\'');
+        sb.append(", lastName='").append(lastName).append('\'');
+        sb.append(", patronymic='").append(patronymic).append('\'');
+        sb.append(", email='").append(email).append('\'');
+        sb.append(", gender=").append(gender);
+        sb.append(", birthDate=").append(birthDate);
+        sb.append(", department=").append(department);
+        sb.append(", position=").append(position);
+        sb.append(", isHead=").append(isHead);
+        sb.append(", user=").append(user);
+        sb.append('}');
+        return sb.toString();
     }
 }

@@ -1,6 +1,6 @@
-package notifier;
+package com.digdes.notifier;
 
-import message.Message;
+import com.digdes.message.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSendException;
@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class EmailNotifier implements Notifier{
+
+    public static final String FROM_EMAIL = "javaschool2022@gmail.com";
 
     @Autowired
     private JavaMailSender javaMailSender;
@@ -39,6 +41,7 @@ public class EmailNotifier implements Notifier{
         return mailMessage;
     }
     public boolean setUpSettings(Settings settings) {
+        //todo:
         return false;
     }
 }

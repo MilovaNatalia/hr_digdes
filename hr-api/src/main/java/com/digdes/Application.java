@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Import;
 public class Application {
 
     //todo: application properties
-    //todo: security
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }

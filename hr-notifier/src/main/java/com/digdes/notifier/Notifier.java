@@ -1,9 +1,8 @@
-package notifier;
+package com.digdes.notifier;
 
-import message.Message;
+import com.digdes.message.Message;
 
 public interface Notifier {
-    //TODO notifier properties
     boolean setUpSettings(Settings settings);
     boolean sendMessage(Message message);
 }

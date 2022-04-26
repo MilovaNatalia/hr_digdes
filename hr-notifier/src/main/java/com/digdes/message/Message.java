@@ -1,4 +1,4 @@
-package message;
+package com.digdes.message;
 
 import java.util.List;
 

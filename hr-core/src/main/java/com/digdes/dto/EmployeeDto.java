@@ -20,7 +20,6 @@ public class EmployeeDto {
     private Long departmentId;
     private Long positionId;
     private Boolean isHead;
-
     private String userId;
 
     public EmployeeDto() {

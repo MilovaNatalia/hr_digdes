@@ -67,4 +67,6 @@ public class DepartmentTypeApiController{
     public boolean loadFromFile(String fileName) {
         return false;
     }
+
+
 }

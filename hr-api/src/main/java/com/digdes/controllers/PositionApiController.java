@@ -13,7 +13,6 @@ import java.util.Optional;
 @RequestMapping(path = "/positions")
 class PositionApiController{
 
-    //todo: constraints for bad request
     @Autowired
     private PositionDataService dataService;
 

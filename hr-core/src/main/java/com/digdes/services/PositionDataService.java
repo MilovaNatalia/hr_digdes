@@ -7,6 +7,10 @@ import com.digdes.models.Employee;
 import com.digdes.models.Position;
 import com.digdes.repositories.EmployeeRepository;
 import com.digdes.repositories.PositionRepository;
+import com.digdes.message.Message;
+import com.digdes.message.impl.EmailMessage;
+import com.digdes.notifier.EmailNotifier;
+import com.digdes.notifier.Notifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
@@ -18,14 +22,18 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class PositionDataService{
+public class PositionDataService extends DataService<PositionDto, PositionDto>{
     @Autowired
     private PositionRepository positionRepository;
 
     @Autowired
     private EmployeeRepository employeeRepository;
 
+    @Autowired
+    private Notifier notifier;
+
     @Transactional
+    @Override
     public PositionDto create (PositionDto info) {
         Position position = mapDtoToPosition(info);
         Optional<Position> existingPosition = positionRepository.findOne(Example.of(position));
@@ -33,14 +41,19 @@ public class PositionDataService{
     }
 
     @Transactional
+    @Override
     public PositionDto update (PositionDto info) {
+        //todo: notifier
         Position position = mapDtoToPosition(info);
         if (positionRepository.findOne(Example.of(new Position(position.getName()))).isPresent())
             throw new EntityUpdateException("Updated position is not found");
-        return mapPositionToDto(positionRepository.save(position));
+        PositionDto result = mapPositionToDto(positionRepository.save(position));
+        notifier.sendMessage(getUpdateMessage(position));
+        return result;
     }
 
     @Transactional
+    @Override
     public boolean delete(PositionDto info) {
         Position position = positionRepository.getById(info.getId());
         if (employeeRepository.findAll(Example.of(new Employee(position))).size() != 0)
@@ -50,6 +63,7 @@ public class PositionDataService{
     }
 
     @Transactional
+    @Override
     public List<PositionDto> find(PositionDto searchRequest) {
         return positionRepository.findAll(
                 Example.of(mapDtoToPosition(searchRequest)))
@@ -58,12 +72,14 @@ public class PositionDataService{
     }
 
     @Transactional
+    @Override
     public Optional<PositionDto> get(Long id) {
         Optional<Position> position = positionRepository.findById(id);
         return position.map(this::mapPositionToDto);
     }
 
     @Transactional
+    @Override
     public List<PositionDto> getAll() {
         return positionRepository.findAll()
                 .stream().map(this::mapPositionToDto)
@@ -80,5 +96,16 @@ public class PositionDataService{
 
     private Position mapDtoToPosition(PositionDto dto){
         return new Position(dto.getId(), dto.getName());
+    }
+
+    private Message getUpdateMessage(Position position){
+        String[] receivers = employeeRepository.findAll(Example.of(new Employee(position)))
+                .stream().map(Employee::getEmail).toArray(String[]::new);
+        Message message = new EmailMessage();
+        message.setFrom(EmailNotifier.FROM_EMAIL);
+        message.setTo(receivers);
+        message.setSubject("Update position name");
+        message.setBody(String.format("Hello!\n Your position renamed \"%s\".", position.getName()));
+        return message;
     }
 }
