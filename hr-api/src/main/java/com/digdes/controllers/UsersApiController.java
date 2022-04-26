@@ -15,8 +15,6 @@ public class UsersApiController {
 
     @Autowired
     private UsersDataService dataService;
-
-
     public UsersApiController() {
     }
 
@@ -24,6 +22,8 @@ public class UsersApiController {
     public ResponseEntity<?> create(@RequestBody UsersDto info) {
         if (info.getUsername() == null)
             return ResponseEntity.badRequest().body("Username must not be null for create");
+        if (info.getRoleId() == null)
+            return ResponseEntity.badRequest().body("Role id cannot be null for create");
         return ResponseEntity.ok(dataService.create(info));
     }
 
@@ -31,8 +31,6 @@ public class UsersApiController {
     public ResponseEntity<?> update(@RequestBody UsersDto info) {
         if (info.getUsername() == null)
             return ResponseEntity.badRequest().body("Username must not be null for update");
-        if (info.getRoleId() == null)
-            return ResponseEntity.badRequest().body("Role id cannot be null");
         return ResponseEntity.ok(dataService.update(info));
     }
 
@@ -51,7 +49,7 @@ public class UsersApiController {
     }
 
     @GetMapping(path = "/get/{id}")
-    public ResponseEntity<?> get(@PathVariable Long id) {
+    public ResponseEntity<?> get(@PathVariable String id) {
         Optional<UsersDto> user = dataService.get(id);
         return ResponseEntity.ok(user.orElseGet(UsersDto::new));
     }

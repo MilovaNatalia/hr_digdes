@@ -62,5 +62,13 @@ public class Users {
         return Objects.hash(username, password, role);
     }
 
-
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer("Users{");
+        sb.append("username='").append(username).append('\'');
+        sb.append(", password='").append(password).append('\'');
+        sb.append(", role=").append(role);
+        sb.append('}');
+        return sb.toString();
+    }
 }

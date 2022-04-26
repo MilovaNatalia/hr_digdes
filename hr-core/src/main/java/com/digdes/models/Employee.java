@@ -55,6 +55,10 @@ public class Employee{
         this.isHead = isHead;
     }
 
+    public Employee(Users user) {
+        this.user = user;
+    }
+
     public Employee(Position position) {
         this.position = position;
     }
